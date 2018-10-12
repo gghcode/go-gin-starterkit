@@ -2,31 +2,31 @@ package app
 
 import (
 	"fmt"
+	"github.com/gin-gonic/gin"
+	"golang-webapi-starterkit/api"
 	"golang-webapi-starterkit/config"
 )
 
 // ApiServer is server that Application level
 type ApiServer struct {
-	engine        ServerEngine
+	engine        *gin.Engine
 	configuration config.Configuration
-	controllers   []ApiController
+	controllers   []api.Controller
 }
 
-func newServer(configuration config.Configuration) *ApiServer {
-	return &ApiServer{
+func NewServer(configuration config.Configuration, controllers []api.Controller) *ApiServer {
+	server := ApiServer{
+		engine:        gin.New(),
 		configuration: configuration,
+		controllers:   controllers,
 	}
-}
 
-func (apiServer *ApiServer) Initialize() {
-	engine := NewGinEngine()
-
-	RegisterControllers(engine, apiServer.controllers)
-
-	apiServer.engine = engine
+	return &server
 }
 
 func (apiServer *ApiServer) Run() error {
+	api.RegisterControllers(apiServer.engine, apiServer.controllers)
+
 	listenPort := apiServer.configuration.ListenPort
 	listenAddr := getAddrString(listenPort)
 
