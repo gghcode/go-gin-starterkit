@@ -10,25 +10,24 @@ type viperBuilder struct {
 	viper *viper.Viper
 }
 
-func NewViperBuilder() Builder {
-	return &viperBuilder{
+func NewViperBuilder() viperBuilder {
+	return viperBuilder{
 		viper: viper.New(),
 	}
 }
 
-func (builder *viperBuilder) SetBasePath(path string) Builder {
+func (builder *viperBuilder) BasePath(path string) Builder {
 	builder.viper.AddConfigPath(path)
-
 	return builder
 }
 
-func (builder *viperBuilder) SetValue(key string, value interface{}) Builder {
+func (builder *viperBuilder) KeyValue(key string, value interface{}) Builder {
 	builder.viper.Set(key, value)
 
 	return builder
 }
 
-func (builder *viperBuilder) AddJsonFile(path string) Builder {
+func (builder *viperBuilder) JsonFile(path string) Builder {
 	builder.viper.SetConfigType("json")
 	builder.viper.SetConfigName(path)
 
@@ -39,7 +38,7 @@ func (builder *viperBuilder) AddJsonFile(path string) Builder {
 	return builder
 }
 
-func (builder *viperBuilder) AddEnvironmentVariables() Builder {
+func (builder *viperBuilder) EnvironmentVariables() Builder {
 	panic(errors.New("Not implement method"))
 }
 
