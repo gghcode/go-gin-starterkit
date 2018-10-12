@@ -2,28 +2,19 @@ package app
 
 import (
 	"fmt"
-	"github.com/Sirupsen/logrus"
 	"golang-webapi-starterkit/config"
-	"golang-webapi-starterkit/todo"
 )
 
+// ApiServer is server that Application level
 type ApiServer struct {
-	engine ServerEngine
+	engine        ServerEngine
 	configuration config.Configuration
 	controllers   []ApiController
-	logger        *logrus.Entry
 }
 
-func NewServer(configuration config.Configuration) *ApiServer {
-	logger := logrus.New().WithField("host", "server")
-	controllers := []ApiController{
-		todo.NewController(configuration),
-	}
-
+func newServer(configuration config.Configuration) *ApiServer {
 	return &ApiServer{
 		configuration: configuration,
-		controllers:   controllers,
-		logger:        logger,
 	}
 }
 
