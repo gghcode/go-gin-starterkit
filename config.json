@@ -1,0 +1,5 @@
+{
+  "LISTEN_PORT": 8080,
+  "MONGO_DB_NAME": "dbname",
+  "MONGO_CONN_STR": "localhost:32769"
+}
