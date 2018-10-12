@@ -53,7 +53,20 @@ func (controller *Controller) addTodo(ctx *gin.Context) {
 }
 
 func (controller *Controller) updateTodo(ctx *gin.Context) {
+	var todo Todo
 
+	if err := ctx.Bind(&todo); err != nil {
+		ctx.AbortWithError(http.StatusBadRequest, err)
+		return
+	}
+
+	todo, err := controller.repository.UpdateTodo(todo)
+	if err != nil {
+		ctx.AbortWithError(500, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, todo)
 }
 
 func (controller *Controller) removeTodo(ctx *gin.Context) {
