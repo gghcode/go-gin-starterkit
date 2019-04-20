@@ -1,8 +1,8 @@
 ports:
   - port: 8080
     onOpen: open-preview
-checkoutLocation: "go/src/github.com/gyuhwankim/go-gin-startkit"
-workspaceLocation: "go/src/github.com/gyuhwankim/go-gin-startkit"
+checkoutLocation: "go/src/github.com/gyuhwankim/go-gin-starterkit"
+workspaceLocation: "go/src/github.com/gyuhwankim/go-gin-starterkit"
 tasks:
   - init: >
       go get -v ./... &&
