@@ -1,0 +1,12 @@
+ports:
+  - port: 8080
+    onOpen: open-preview
+checkoutLocation: "go/src/github.com/gyuhwankim/go-gin-startkit"
+workspaceLocation: "go/src/github.com/gyuhwankim/go-gin-startkit"
+tasks:
+  - init: >
+      go get -v ./... &&
+      go build -o app
+github:
+    prebuilds:
+        pullRequestsFromForks: true
