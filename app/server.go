@@ -1,7 +1,11 @@
 package app
 
 import (
+	"path"
+
 	"github.com/gin-gonic/gin"
+	"github.com/gyuhwankim/go-gin-starterkit/app/http"
+	"github.com/gyuhwankim/go-gin-starterkit/app/resources/todo"
 	"github.com/gyuhwankim/go-gin-starterkit/config"
 )
 
@@ -23,7 +27,15 @@ func New(conf config.Configuration) *Server {
 }
 
 // Run start to listen.
-func (server Server) Run() error {
+func (server *Server) Run() error {
+	registerResource(server.core, "/api/v1/todo", todo.NewV1Resource())
+
 	addr := server.conf.Addr
 	return server.core.Run(addr)
+}
+
+func registerResource(core *gin.Engine, basePath string, routes []http.Route) {
+	for _, route := range routes {
+		core.Handle(route.Method, path.Join(basePath, route.Path), route.Handler)
+	}
 }
