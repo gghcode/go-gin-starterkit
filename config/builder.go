@@ -16,7 +16,7 @@ func NewBuilder() *Builder {
 
 // AddConfigFile read config file from filepath.
 func (builder *Builder) AddConfigFile(filepath string, optional bool) *Builder {
-	builder.pipelines = append(builder.pipelines, func(v *viper.Viper) error {
+	builder.pipelines = append(builder.pipelines, func(viperObj *viper.Viper) error {
 
 		return nil
 	})
@@ -26,7 +26,7 @@ func (builder *Builder) AddConfigFile(filepath string, optional bool) *Builder {
 
 // BindEnvs bind environment variables.
 func (builder *Builder) BindEnvs(prefix string) *Builder {
-	builder.pipelines = append(builder.pipelines, func(v *viper.Viper) error {
+	builder.pipelines = append(builder.pipelines, func(viperObj *viper.Viper) error {
 		return nil
 	})
 
@@ -35,17 +35,17 @@ func (builder *Builder) BindEnvs(prefix string) *Builder {
 
 // Build return new configuration instance.
 func (builder *Builder) Build() (Configuration, error) {
-	viperInstance := viper.New()
+	viperObj := viper.New()
 
 	for _, pipeline := range builder.pipelines {
-		if err := pipeline(viperInstance); err != nil {
+		if err := pipeline(viperObj); err != nil {
 			return Configuration{}, err
 		}
 	}
 
 	var result Configuration
 
-	if err := viperInstance.Unmarshal(&result); err != nil {
+	if err := viperObj.Unmarshal(&result); err != nil {
 		return Configuration{}, err
 	}
 
