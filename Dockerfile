@@ -7,7 +7,7 @@ WORKDIR /app
 
 COPY . .
 
-RUN apk add --no-cache git && go download && \
+RUN apk add --no-cache git && go mod download && \
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 
 FROM scratch
