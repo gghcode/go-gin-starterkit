@@ -1,26 +1,32 @@
 version: 2
 jobs:
-    build:
+    build-binary:
         docker:
             - image: circleci/golang:1.12
         working_directory: ~/go-gin-starterkit
         steps:
-            - checkout
+          - checkout
 
-            - restore_cache:
-                keys:
-                  - go-mod-v1-{{ checksum "go.sum" }}
+          - restore_cache:
+              keys: go-mod-v1-{{ checksum "go.sum" }}
 
-            - run: go mod download
-            - run: go build
+          - run: go mod download
+          - run: go build
 
-            - save_cache:
-                key: go-mod-v1-{{ checksum "go.sum" }}
-                paths:
-                  - "/go/pkg/mod"
+          - save_cache:
+              key: go-mod-v1-{{ checksum "go.sum" }}
+              paths:
+                - "/go/pkg/mod"
+    run-unittest:
+        steps:
+          - run: go test ./...
+    
 
 workflows:
     version: 2
     build-test:
         jobs:
-            - build
+            - build-binary
+            - run-unittest:
+                requires:
+                  - build-binary
