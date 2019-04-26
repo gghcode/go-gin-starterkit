@@ -7,6 +7,10 @@ tasks:
   - init: >
       export GO111MODULE=on &&
       go mod download
+
+  - command: >
+      export GO111MODULE=on
+
 github:
     prebuilds:
         pullRequestsFromForks: true
