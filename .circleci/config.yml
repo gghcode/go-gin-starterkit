@@ -3,9 +3,7 @@ jobs:
     build:
         docker:
             - image: circleci/golang:1.12
-              environment:
-                  GO111MODULE: "ON"
-        working_directory: /go/src/github.com/gyuhwankim/go-gin-starterkit
+        working_directory: ~/go-gin-starterkit
         steps:
             - checkout
 
