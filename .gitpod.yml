@@ -5,12 +5,16 @@ checkoutLocation: "go/src/github.com/gyuhwankim/go-gin-starterkit"
 workspaceLocation: "go/src/github.com/gyuhwankim/go-gin-starterkit"
 tasks:
   - init: >
-      export GO111MODULE=on &&
       go mod download
+<<<<<<< HEAD
 
   - command: >
       export GO111MODULE=on
 
+=======
+  - command: >
+      export GO111MODULE=on
+>>>>>>> d5d3f3a8463cc3c61a0169b02582850a8027d746
 github:
     prebuilds:
         pullRequestsFromForks: true
