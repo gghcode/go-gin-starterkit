@@ -19,7 +19,7 @@ jobs:
                 - "/go/pkg/mod"
     build-docker-image:
         docker:
-            - image: docker:18.09.5-git
+            - image: circleci/golang:1.12
         working_directory: ~/go-gin-starterkit
         steps:
             - checkout
