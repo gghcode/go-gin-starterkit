@@ -7,8 +7,17 @@ jobs:
         steps:
             - checkout
 
+            - restore_cache:
+                keys:
+                  - go-mod-v1-{{ checksum "go.sum" }}
+
             - run: go mod download
             - run: go build
+
+            - save_cache:
+                key: go-mod-v1-{{ checksum "go.sum" }}
+                path:
+                  - "/go/pkg/mod"
 
 workflows:
     version: 2
