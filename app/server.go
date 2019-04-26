@@ -28,7 +28,7 @@ func New(conf config.Configuration) *Server {
 
 // Run start to listen.
 func (server *Server) Run() error {
-	registerResource(server.core, "/api/v1/todo", todo.NewV1Resource())
+	registerResource(server.core, "/api/v1/todos", todo.NewV1Resource())
 
 	addr := server.conf.Addr
 	return server.core.Run(addr)
