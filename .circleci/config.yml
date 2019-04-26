@@ -16,7 +16,7 @@ jobs:
 
             - save_cache:
                 key: go-mod-v1-{{ checksum "go.sum" }}
-                path:
+                paths:
                   - "/go/pkg/mod"
 
 workflows:
