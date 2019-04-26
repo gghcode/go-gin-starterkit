@@ -17,6 +17,13 @@ jobs:
               key: go-mod-v1-{{ checksum "go.sum" }}
               paths:
                 - "/go/pkg/mod"
+    build-docker-image:
+        docker:
+            - image: docker:18.09.5-git
+        working_directory: ~/go-gin-starterkit
+        steps:
+            - checkout
+            - run: docker build -t go-gin-starterkit .
     run-unittest:
         docker:
             - image: circleci/golang:1.12
@@ -30,6 +37,10 @@ workflows:
     build-test:
         jobs:
             - build-binary
+            - build-docker-image
             - run-unittest:
                 requires:
                   - build-binary
+            - build-docker-image:
+                requires:
+                  - run-unittest
