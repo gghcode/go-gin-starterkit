@@ -9,7 +9,7 @@ jobs:
         steps:
             - checkout
 
-            - run: go download
+            - run: go mod download
             - run: go build
 
 workflows:
