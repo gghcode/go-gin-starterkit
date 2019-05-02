@@ -13,6 +13,26 @@ func NewController() *Controller {
 	return &Controller{}
 }
 
+func (c *Controller) getAllHandler(ctx *gin.Context) {
+	panic("Not implement...")
+}
+
+func (c *Controller) getByTodoId(ctx *gin.Context) {
+	panic("Not implement...")
+}
+
+func (c *Controller) createHandler(ctx *gin.Context) {
+	panic("Not implement...")
+}
+
+func (c *Controller) updateByTodoId(ctx *gin.Context) {
+	panic("Not implement...")
+}
+
+func (c *Controller) removeByTodoIdHandler(ctx *gin.Context) {
+	panic("Not implement...")
+}
+
 func (c *Controller) postHandler(ctx *gin.Context) {
 	var todo Todo
 
@@ -21,8 +41,4 @@ func (c *Controller) postHandler(ctx *gin.Context) {
 	}
 
 	ctx.JSON(201, todo)
-}
-
-func (c *Controller) getHandler(ctx *gin.Context) {
-
 }
