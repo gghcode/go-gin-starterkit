@@ -17,7 +17,7 @@ jobs:
               key: go-mod-v1-{{ checksum "go.sum" }}
               paths:
                 - "/go/pkg/mod"
-	
+
     build-docker-image:
         machine: true
         working_directory: ~/go-gin-starterkit
