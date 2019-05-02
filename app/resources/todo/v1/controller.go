@@ -17,7 +17,7 @@ func (c *Controller) getAllHandler(ctx *gin.Context) {
 	panic("Not implement...")
 }
 
-func (c *Controller) getByTodoId(ctx *gin.Context) {
+func (c *Controller) getByTodoIdHandler(ctx *gin.Context) {
 	panic("Not implement...")
 }
 
@@ -25,7 +25,7 @@ func (c *Controller) createHandler(ctx *gin.Context) {
 	panic("Not implement...")
 }
 
-func (c *Controller) updateByTodoId(ctx *gin.Context) {
+func (c *Controller) updateByTodoIdHandler(ctx *gin.Context) {
 	panic("Not implement...")
 }
 

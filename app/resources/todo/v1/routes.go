@@ -15,7 +15,7 @@ func Routes(controller *Controller) []http.Route {
 		http.Route{
 			Method:  "GET",
 			Path:    "/:id",
-			Handler: controller.getByTodoId,
+			Handler: controller.getByTodoIdHandler,
 		},
 		http.Route{
 			Method:  "POST",
