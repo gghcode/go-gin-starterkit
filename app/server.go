@@ -23,6 +23,8 @@ func New(conf config.Configuration) *Server {
 		conf: conf,
 	}
 
+	registerDefaultRoutes(server.core)
+
 	return &server
 }
 
@@ -38,4 +40,10 @@ func registerResource(core *gin.Engine, basePath string, routes []http.Route) {
 	for _, route := range routes {
 		core.Handle(route.Method, path.Join(basePath, route.Path), route.Handler)
 	}
+}
+
+func registerDefaultRoutes(core *gin.Engine) {
+	core.GET("ping", func(ctx *gin.Context) {
+		ctx.String(200, "pong")
+	})
 }
