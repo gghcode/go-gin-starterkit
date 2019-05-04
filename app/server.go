@@ -23,12 +23,14 @@ func New(conf config.Configuration) *Server {
 		conf: conf,
 	}
 
+	registerDefaultRoutes(server.core)
+	registerResource(server.core, "/api/v1/todos", todo.NewV1Resource())
+
 	return &server
 }
 
 // Run start to listen.
 func (server *Server) Run() error {
-	registerResource(server.core, "/api/v1/todos", todo.NewV1Resource())
 
 	addr := server.conf.Addr
 	return server.core.Run(addr)
@@ -38,4 +40,10 @@ func registerResource(core *gin.Engine, basePath string, routes []http.Route) {
 	for _, route := range routes {
 		core.Handle(route.Method, path.Join(basePath, route.Path), route.Handler)
 	}
+}
+
+func registerDefaultRoutes(core *gin.Engine) {
+	core.GET("ping", func(ctx *gin.Context) {
+		ctx.String(200, "pong")
+	})
 }

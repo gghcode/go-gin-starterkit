@@ -10,7 +10,27 @@ func Routes(controller *Controller) []http.Route {
 		http.Route{
 			Method:  "GET",
 			Path:    "/",
-			Handler: controller.getHandler,
+			Handler: controller.getAllHandler,
+		},
+		http.Route{
+			Method:  "GET",
+			Path:    "/:id",
+			Handler: controller.getByTodoIdHandler,
+		},
+		http.Route{
+			Method:  "POST",
+			Path:    "/",
+			Handler: controller.createHandler,
+		},
+		http.Route{
+			Method:  "PUT",
+			Path:    "/:id",
+			Handler: controller.updateByTodoIdHandler,
+		},
+		http.Route{
+			Method:  "DELETE",
+			Path:    "/:id",
+			Handler: controller.removeByTodoIdHandler,
 		},
 	}
 }

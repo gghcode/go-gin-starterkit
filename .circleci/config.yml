@@ -1,17 +1,52 @@
 version: 2
 jobs:
-    build:
+    build-binary:
         docker:
             - image: circleci/golang:1.12
-        working_directory: /go-gin-starterkit
+        working_directory: ~/go-gin-starterkit
+        steps:
+          - checkout
+
+          - restore_cache:
+              keys: go-mod-v1-{{ checksum "go.sum" }}
+
+          - run: go mod download
+          - run: go build
+
+          - save_cache:
+              key: go-mod-v1-{{ checksum "go.sum" }}
+              paths:
+                - "/go/pkg/mod"
+
+    build-docker-image:
+        machine: true
+        working_directory: ~/go-gin-starterkit
         steps:
             - checkout
+            - run: docker build -t go-gin-starterkit .
+            - run: mkdir -p /tmp/images
+            - run: docker save -o /tmp/images/app.tar go-gin-starterkit
+            - store_artifacts:
+                path: /tmp/images
+                destination: app.tar
 
-            - run: go download
-            - run: go build
-
+    run-unittest:
+        docker:
+            - image: circleci/golang:1.12
+        working_directory: ~/go-gin-starterkit
+        steps:
+          - checkout
+          - run: go test ./...
+    
 workflows:
     version: 2
     build-test:
         jobs:
-            - build
+            - build-binary
+            - build-docker-image
+            - run-unittest:
+                requires:
+                  - build-binary
+            - build-docker-image:
+                requires:
+                  - run-unittest
