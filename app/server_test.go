@@ -3,40 +3,28 @@ package app
 import (
 	"github.com/gyuhwankim/go-gin-starterkit/config"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	// "io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 )
 
 func TestPingPong(t *testing.T) {
-	client, teardown := setup()
-	defer teardown()
+	router := New(config.Configuration{}).core
+	recorder := performRequest(router, "GET", "/ping")
 
-	res, err := client.Get("/ping")
-	defer res.Body.Close()
-
-	if err != nil {
-		t.Errorf("Error occured: %s", err)
-	}
-
-	body, err := ioutil.ReadAll(res.Body)
-	if err != nil {
-		t.Errorf("Error occured: %s", err)
-	}
-
-	assert.Equal(t, body, "pong")
+	assert.Equal(t, http.StatusOK, recorder.Code)
+	assert.Equal(t, "pong", recorder.Body.String())
 }
 
-func setup() (*http.Client, func()) {
-	conf := config.Configuration{
-		Addr: ":8080",
+func performRequest(router http.Handler, method, path string) *httptest.ResponseRecorder {
+	req, err := http.NewRequest(method, path, nil)
+	if err != nil {
+		panic(err)
 	}
 
-	appServer := New(conf)
-	testServer := httptest.NewServer(appServer.core)
+	recorder := httptest.NewRecorder()
+	router.ServeHTTP(recorder, req)
 
-	return testServer.Client(), func() {
-		testServer.Close()
-	}
+	return recorder
 }
