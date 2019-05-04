@@ -1,3 +1,4 @@
+image: docker:git
 ports:
   - port: 8080
     onOpen: open-preview
@@ -6,15 +7,8 @@ workspaceLocation: "go/src/github.com/gyuhwankim/go-gin-starterkit"
 tasks:
   - init: >
       go mod download
-<<<<<<< HEAD
-
   - command: >
       export GO111MODULE=on
-
-=======
-  - command: >
-      export GO111MODULE=on
->>>>>>> d5d3f3a8463cc3c61a0169b02582850a8027d746
 github:
     prebuilds:
         pullRequestsFromForks: true
