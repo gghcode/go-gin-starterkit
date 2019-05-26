@@ -8,6 +8,6 @@ import (
 type Todo struct {
 	ID              string    `json:"id"`
 	Title           string    `json:"title"`
-	Contents        string    `json:"contents`
-	CreatedDateTime time.Time `json:"created_datetime`
+	Contents        string    `json:"contents"`
+	CreatedDateTime time.Time `json:"created_datetime"`
 }
