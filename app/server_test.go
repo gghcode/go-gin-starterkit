@@ -11,12 +11,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestPingPong(t *testing.T) {
+func TestHealthyHandler(t *testing.T) {
 	router := setupRouter()
-	recorder := performRequest(router, "GET", "/ping")
+	recorder := performRequest(router, "GET", "/healthy")
 
 	assert.Equal(t, http.StatusOK, recorder.Code)
-	assert.Equal(t, "pong", recorder.Body.String())
 }
 
 func TestRegisterResource(t *testing.T) {

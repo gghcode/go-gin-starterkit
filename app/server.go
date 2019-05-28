@@ -45,8 +45,4 @@ func registerDefaultRoutes(core *gin.Engine) {
 	core.GET("healthy", func(ctx *gin.Context) {
 		ctx.Status(200)
 	})
-
-	core.GET("ping", func(ctx *gin.Context) {
-		ctx.String(200, "pong")
-	})
 }
