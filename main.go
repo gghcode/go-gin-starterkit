@@ -19,7 +19,7 @@ func main() {
 		panic(err)
 	}
 
-	server := app.New(conf)
+	server := app.NewServer(conf)
 	if err := server.Run(); err != nil {
 		panic(err)
 	}

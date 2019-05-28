@@ -16,8 +16,8 @@ type Server struct {
 	conf config.Configuration
 }
 
-// New return new server instance.
-func New(conf config.Configuration) *Server {
+// NewServer return new server instance.
+func NewServer(conf config.Configuration) *Server {
 	server := Server{
 		core: gin.New(),
 		conf: conf,
@@ -31,7 +31,6 @@ func New(conf config.Configuration) *Server {
 
 // Run start to listen.
 func (server *Server) Run() error {
-
 	addr := server.conf.Addr
 	return server.core.Run(addr)
 }

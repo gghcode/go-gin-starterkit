@@ -1,13 +1,14 @@
 package app
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/gin-gonic/gin"
 	ht "github.com/gyuhwankim/go-gin-starterkit/app/http"
 	"github.com/gyuhwankim/go-gin-starterkit/config"
 	"github.com/stretchr/testify/assert"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 func TestPingPong(t *testing.T) {
@@ -50,5 +51,5 @@ func performRequest(router http.Handler, method, path string) *httptest.Response
 }
 
 func setupRouter() *gin.Engine {
-	return New(config.Configuration{}).core
+	return NewServer(config.Configuration{}).core
 }
