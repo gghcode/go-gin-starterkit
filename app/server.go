@@ -2,9 +2,14 @@ package app
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/gyuhwankim/go-gin-starterkit/app/api"
+	"github.com/gyuhwankim/go-gin-starterkit/app/api/common"
 	"github.com/gyuhwankim/go-gin-starterkit/config"
 )
+
+// Controller is interface about api Controller.
+type Controller interface {
+	RegisterRoutes(gin.IRouter)
+}
 
 // Server is api-server instance.
 // it contains gin.Engine, middlewares, configuration.
@@ -20,6 +25,8 @@ func NewServer(conf config.Configuration) *Server {
 		conf: conf,
 	}
 
+	registerControllerPrefix(server.core, "api", common.NewController())
+
 	return &server
 }
 
@@ -29,8 +36,10 @@ func (server *Server) Run() error {
 	return server.core.Run(addr)
 }
 
-func registerController(core *gin.Engine, c []api.Controller) {
-	for _, item := range c {
-		item.RegisterRoutes(core.Handle)
-	}
+func registerController(core *gin.Engine, controller Controller) {
+	registerControllerPrefix(core, "", controller)
+}
+
+func registerControllerPrefix(core *gin.Engine, prefixPath string, controller Controller) {
+	controller.RegisterRoutes(core.Group(prefixPath))
 }

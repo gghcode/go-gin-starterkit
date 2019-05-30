@@ -2,7 +2,6 @@ package common
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/gyuhwankim/go-gin-starterkit/app/api"
 )
 
 // Controller is common controller.
@@ -14,8 +13,8 @@ func NewController() *Controller {
 }
 
 // RegisterRoutes is method that register api routes.
-func (c Controller) RegisterRoutes(handle api.HandleFunc) {
-	handle("GET", "/healthy", c.getHealthy)
+func (c Controller) RegisterRoutes(router gin.IRouter) {
+	router.Handle("GET", "/healthy", c.getHealthy)
 }
 
 func (c *Controller) getHealthy(ctx *gin.Context) {
