@@ -19,7 +19,7 @@ func setupTestcase() *gin.Engine {
 	engine := gin.New()
 
 	controller := NewController()
-	controller.RegisterRoutes(engine.Handle)
+	controller.RegisterRoutes(engine)
 	
 	return engine
 }
