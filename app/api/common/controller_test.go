@@ -1,11 +1,11 @@
 package common
 
 import (
-	"github.com/stretchr/testify/assert"
-	"testing"
-	"net/http/httptest"
-	"net/http"
 	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
 func testHealthy(t *testing.T) {
@@ -20,7 +20,7 @@ func setupTestcase() *gin.Engine {
 
 	controller := NewController()
 	controller.RegisterRoutes(engine)
-	
+
 	return engine
 }
 
