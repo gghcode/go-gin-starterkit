@@ -8,7 +8,8 @@ jobs:
           - checkout
 
           - restore_cache:
-              keys: go-mod-v1-{{ checksum "go.sum" }}
+              keys: 
+                - go-mod-v1-{{ checksum "go.sum" }}
 
           - run: go build
 
