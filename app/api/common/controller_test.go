@@ -8,7 +8,7 @@ import (
 	"testing"
 )
 
-func testHealthy(t *testing.T) {
+func TestHealthy(t *testing.T) {
 	engine := setupTestcase()
 	recorder := requestHTTP(engine, "GET", "/healthy")
 
