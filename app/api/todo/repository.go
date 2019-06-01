@@ -3,12 +3,15 @@ package todo
 import (
 	"github.com/gyuhwankim/go-gin-starterkit/app/api/common"
 	"github.com/gyuhwankim/go-gin-starterkit/db"
+	uuid "github.com/satori/go.uuid"
 )
 
 // Repository communications with db connection.
 type Repository interface {
 	getTodos() ([]Todo, error)
 	getTodoByTodoID(todoID string) (Todo, error)
+
+	createTodo(todo Todo) (Todo, error)
 }
 
 type repository struct {
@@ -45,6 +48,20 @@ func (repo *repository) getTodoByTodoID(todoID string) (Todo, error) {
 
 	if notfound {
 		return Todo{}, common.ErrEntityNotFound
+	}
+
+	return todo, nil
+}
+
+func (repo *repository) createTodo(todo Todo) (Todo, error) {
+	todo.ID = uuid.NewV4()
+
+	err := repo.dbConn.GetDB().
+		Create(todo).
+		Error
+
+	if err != nil {
+		return Todo{}, err
 	}
 
 	return todo, nil
