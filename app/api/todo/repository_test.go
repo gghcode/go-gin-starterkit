@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/gyuhwankim/go-gin-starterkit/app/api/common"
 	"github.com/gyuhwankim/go-gin-starterkit/db"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
@@ -80,4 +81,39 @@ func (suite *repoTestSuite) TestShouldGetTodos() {
 	assert.Nil(suite.T(), err)
 	assert.Equal(suite.T(), len(expectedTodos), len(actualTodos))
 	assert.Equal(suite.T(), expectedTodos, actualTodos)
+}
+
+func (suite *repoTestSuite) TestShouldGetTodo() {
+	expected := TodoModel{
+		ID:       uuid.NewV4(),
+		Title:    "todo title",
+		Contents: "todo contents",
+	}
+
+	rows := sqlmock.NewRows([]string{"id", "title", "contents"}).
+		AddRow(expected.ID, expected.Title, expected.Contents)
+
+	suite.mockSQL.ExpectQuery(regexp.QuoteMeta(
+		`SELECT * FROM "todo_models" WHERE (id=$1)`)).
+		WithArgs(expected.ID).
+		WillReturnRows(rows)
+
+	actual, err := suite.repo.getTodoByTodoID(expected.ID.String())
+
+	require.NoError(suite.T(), err)
+	require.Equal(suite.T(), expected, actual)
+}
+
+func (suite *repoTestSuite) TestShouldBeNotFound() {
+	expectedError := common.ErrEntityNotFound
+	notExistsTodoID := uuid.NewV4()
+
+	suite.mockSQL.ExpectQuery(regexp.QuoteMeta(
+		`SELECT * FROM "todo_models" WHERE (id=$1)`)).
+		WithArgs(notExistsTodoID).
+		WillReturnError(gorm.ErrRecordNotFound)
+
+	_, actualError := suite.repo.getTodoByTodoID(notExistsTodoID.String())
+
+	require.Equal(suite.T(), expectedError, actualError)
 }
