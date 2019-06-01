@@ -9,10 +9,13 @@ import (
 
 // Repository communications with db connection.
 type Repository interface {
+	createTodo(todo Todo) (Todo, error)
+
 	getTodos() ([]Todo, error)
+
 	getTodoByTodoID(todoID string) (Todo, error)
 
-	createTodo(todo Todo) (Todo, error)
+	updateTodoByTodoID(todoID string, todo Todo) (Todo, error)
 
 	removeTodoByTodoID(todoID string) (string, error)
 }
@@ -66,6 +69,21 @@ func (repo *repository) createTodo(todo Todo) (Todo, error) {
 		Error
 
 	if err != nil {
+		return Todo{}, err
+	}
+
+	return todo, nil
+}
+
+func (repo *repository) updateTodoByTodoID(todoID string, todo Todo) (Todo, error) {
+	err := repo.dbConn.GetDB().
+		Where("id=?", todoID).
+		Updates(todo).
+		Error
+
+	if err == gorm.ErrRecordNotFound {
+		return Todo{}, common.ErrEntityNotFound
+	} else if err != nil {
 		return Todo{}, err
 	}
 
