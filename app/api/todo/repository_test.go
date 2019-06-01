@@ -23,7 +23,7 @@ type repoTestSuite struct {
 	mockGormDB *gorm.DB
 	mockDbConn *db.Conn
 
-	repo *Repository
+	repo Repository
 }
 
 func TestRepoTestSuite(t *testing.T) {

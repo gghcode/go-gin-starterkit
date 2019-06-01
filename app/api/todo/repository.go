@@ -6,20 +6,25 @@ import (
 )
 
 // Repository communications with db connection.
-type Repository struct {
+type Repository interface {
+	getTodos() ([]TodoModel, error)
+	getTodoByTodoID(todoID string) (TodoModel, error)
+}
+
+type repository struct {
 	dbConn *db.Conn
 }
 
 // NewRepository return new instance.
-func NewRepository(dbConn *db.Conn) *Repository {
+func NewRepository(dbConn *db.Conn) Repository {
 	dbConn.GetDB().AutoMigrate(TodoModel{})
 
-	return &Repository{
+	return &repository{
 		dbConn: dbConn,
 	}
 }
 
-func (repo Repository) getTodos() ([]TodoModel, error) {
+func (repo *repository) getTodos() ([]TodoModel, error) {
 	var todos []TodoModel
 
 	db := repo.dbConn.GetDB()
@@ -30,7 +35,7 @@ func (repo Repository) getTodos() ([]TodoModel, error) {
 	return todos, nil
 }
 
-func (repo *Repository) getTodoByTodoID(todoID string) (TodoModel, error) {
+func (repo *repository) getTodoByTodoID(todoID string) (TodoModel, error) {
 	var todo TodoModel
 
 	notfound := repo.dbConn.GetDB().
