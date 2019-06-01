@@ -54,13 +54,13 @@ func (suite *repoTestSuite) TearDownTest() {
 }
 
 func (suite *repoTestSuite) TestShouldGetTodos() {
-	expectedTodos := []TodoModel{
-		TodoModel{
+	expectedTodos := []Todo{
+		Todo{
 			ID:       uuid.NewV4(),
 			Title:    "FIRST TITLE",
 			Contents: "FIRST CONTENTS",
 		},
-		TodoModel{
+		Todo{
 			ID:       uuid.NewV4(),
 			Title:    "SECOND TITLE",
 			Contents: "SECOND CONTENTS",
@@ -73,7 +73,7 @@ func (suite *repoTestSuite) TestShouldGetTodos() {
 	}
 
 	suite.mockSQL.ExpectQuery(regexp.QuoteMeta(
-		`SELECT * FROM "todo_models"`)).
+		`SELECT * FROM "todos"`)).
 		WillReturnRows(rows)
 
 	actualTodos, err := suite.repo.getTodos()
@@ -84,7 +84,7 @@ func (suite *repoTestSuite) TestShouldGetTodos() {
 }
 
 func (suite *repoTestSuite) TestShouldGetTodo() {
-	expected := TodoModel{
+	expected := Todo{
 		ID:       uuid.NewV4(),
 		Title:    "todo title",
 		Contents: "todo contents",
@@ -94,7 +94,7 @@ func (suite *repoTestSuite) TestShouldGetTodo() {
 		AddRow(expected.ID, expected.Title, expected.Contents)
 
 	suite.mockSQL.ExpectQuery(regexp.QuoteMeta(
-		`SELECT * FROM "todo_models" WHERE (id=$1)`)).
+		`SELECT * FROM "todos" WHERE (id=$1)`)).
 		WithArgs(expected.ID).
 		WillReturnRows(rows)
 
@@ -109,7 +109,7 @@ func (suite *repoTestSuite) TestShouldBeNotFound() {
 	notExistsTodoID := uuid.NewV4()
 
 	suite.mockSQL.ExpectQuery(regexp.QuoteMeta(
-		`SELECT * FROM "todo_models" WHERE (id=$1)`)).
+		`SELECT * FROM "todos" WHERE (id=$1)`)).
 		WithArgs(notExistsTodoID).
 		WillReturnError(gorm.ErrRecordNotFound)
 

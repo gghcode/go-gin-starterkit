@@ -7,8 +7,8 @@ import (
 
 // Repository communications with db connection.
 type Repository interface {
-	getTodos() ([]TodoModel, error)
-	getTodoByTodoID(todoID string) (TodoModel, error)
+	getTodos() ([]Todo, error)
+	getTodoByTodoID(todoID string) (Todo, error)
 }
 
 type repository struct {
@@ -17,15 +17,15 @@ type repository struct {
 
 // NewRepository return new instance.
 func NewRepository(dbConn *db.Conn) Repository {
-	dbConn.GetDB().AutoMigrate(TodoModel{})
+	dbConn.GetDB().AutoMigrate(Todo{})
 
 	return &repository{
 		dbConn: dbConn,
 	}
 }
 
-func (repo *repository) getTodos() ([]TodoModel, error) {
-	var todos []TodoModel
+func (repo *repository) getTodos() ([]Todo, error) {
+	var todos []Todo
 
 	db := repo.dbConn.GetDB()
 	if err := db.Find(&todos).Error; err != nil {
@@ -35,8 +35,8 @@ func (repo *repository) getTodos() ([]TodoModel, error) {
 	return todos, nil
 }
 
-func (repo *repository) getTodoByTodoID(todoID string) (TodoModel, error) {
-	var todo TodoModel
+func (repo *repository) getTodoByTodoID(todoID string) (Todo, error) {
+	var todo Todo
 
 	notfound := repo.dbConn.GetDB().
 		Where("id=?", todoID).
@@ -44,7 +44,7 @@ func (repo *repository) getTodoByTodoID(todoID string) (TodoModel, error) {
 		RecordNotFound()
 
 	if notfound {
-		return TodoModel{}, common.ErrEntityNotFound
+		return Todo{}, common.ErrEntityNotFound
 	}
 
 	return todo, nil
