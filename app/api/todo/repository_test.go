@@ -146,3 +146,36 @@ func (suite *repoTestSuite) TestShouldBeCreated() {
 	require.Nil(suite.T(), err)
 	require.Equal(suite.T(), expected, actual)
 }
+
+func (suite *repoTestSuite) TestShouldBeDeleted() {
+	expectedTodoID := uuid.NewV4().String()
+
+	reply := []map[string]interface{}{{
+		"id":       expectedTodoID,
+		"title":    "title",
+		"contents": "contents",
+	}}
+
+	suite.catcher.Reset().NewMock().
+		WithQuery(`DELETE * FROM "todos"`).
+		WithArgs(expectedTodoID).
+		WithReply(reply)
+
+	actualTodoID, err := suite.repo.removeTodoByTodoID(expectedTodoID)
+
+	require.Nil(suite.T(), err)
+	require.Equal(suite.T(), expectedTodoID, actualTodoID)
+}
+
+func (suite *repoTestSuite) TestShouldBeNotFoundWhenRemoveTodo() {
+	expectedError := common.ErrEntityNotFound
+	notExistsTodoID := uuid.NewV4().String()
+
+	suite.catcher.Reset().NewMock().
+		WithArgs(notExistsTodoID).
+		WithError(gorm.ErrRecordNotFound)
+
+	_, actualError := suite.repo.removeTodoByTodoID(notExistsTodoID)
+
+	require.Equal(suite.T(), expectedError, actualError)
+}
