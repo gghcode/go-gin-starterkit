@@ -8,8 +8,10 @@ jobs:
           - checkout
 
           - restore_cache:
-              keys: go-mod-v1-{{ checksum "go.sum" }}
+              keys: 
+                - go-mod-v1-{{ checksum "go.sum" }}
 
+          - run: git config --global http.sslVerify "false"
           - run: go mod download
           - run: go build
 
