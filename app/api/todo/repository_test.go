@@ -147,6 +147,39 @@ func (suite *repoTestSuite) TestShouldBeCreated() {
 	require.Equal(suite.T(), expected, actual)
 }
 
+func (suite *repoTestSuite) TestShouldBeUpdated() {
+	expectedTodo := Todo{
+		ID:       uuid.NewV4(),
+		Title:    "updated title",
+		Contents: "updated contents",
+	}
+
+	suite.catcher.Reset().NewMock().
+		WithArgs(expectedTodo.ID.String())
+
+	actualTodo, err := suite.repo.updateTodoByTodoID(expectedTodo.ID.String(), expectedTodo)
+
+	require.Nil(suite.T(), err)
+	require.Equal(suite.T(), expectedTodo, actualTodo)
+}
+
+func (suite *repoTestSuite) TestShouldBeNotFoundWhenUpdateTodo() {
+	expectedError := common.ErrEntityNotFound
+	notExistsTodoID := uuid.NewV4()
+	notExistsTodo := Todo{
+		ID:       notExistsTodoID,
+		Title:    "NOT EXISTS TODO",
+		Contents: "NOT EXISTS CONTENTS",
+	}
+
+	suite.catcher.Reset().NewMock().
+		WithError(gorm.ErrRecordNotFound)
+
+	_, actualError := suite.repo.updateTodoByTodoID(notExistsTodoID.String(), notExistsTodo)
+
+	require.Equal(suite.T(), expectedError, actualError)
+}
+
 func (suite *repoTestSuite) TestShouldBeDeleted() {
 	expectedTodoID := uuid.NewV4().String()
 
