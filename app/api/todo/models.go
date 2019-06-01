@@ -7,7 +7,7 @@ import (
 )
 
 // TodoModel is todo data model.
-type TodoModel struct {
+type Todo struct {
 	ID        uuid.UUID `gorm:"type:uuid;primary_key;"`
 	Title     string
 	Contents  string
