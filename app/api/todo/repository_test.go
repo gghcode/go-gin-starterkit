@@ -1,27 +1,25 @@
 package todo
 
 import (
-	"database/sql"
-	"regexp"
 	"testing"
 
-	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/gyuhwankim/go-gin-starterkit/app/api/common"
 	"github.com/gyuhwankim/go-gin-starterkit/db"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+
+	mocket "github.com/selvatico/go-mocket"
 )
 
 type repoTestSuite struct {
 	suite.Suite
 
-	mockDB     *sql.DB
-	mockSQL    sqlmock.Sqlmock
 	mockGormDB *gorm.DB
 	mockDbConn *db.Conn
+
+	catcher *mocket.MockCatcher
 
 	repo Repository
 }
@@ -31,16 +29,14 @@ func TestRepoTestSuite(t *testing.T) {
 }
 
 func (suite *repoTestSuite) SetupTest() {
-	mockDB, mockSQL, err := sqlmock.New()
+	mocket.Catcher.Register() // Safe register. Allowed multiple calls to save
+	mocket.Catcher.Logging = true
+
+	mockGormDB, err := gorm.Open(mocket.DriverName, "connectionString")
 
 	require.NoError(suite.T(), err)
 
-	mockGormDB, err := gorm.Open("postgres", mockDB)
-
-	require.NoError(suite.T(), err)
-
-	suite.mockDB = mockDB
-	suite.mockSQL = mockSQL
+	suite.catcher = mocket.Catcher
 	suite.mockGormDB = mockGormDB
 	suite.mockDbConn = db.NewConn(mockGormDB)
 	suite.repo = NewRepository(suite.mockDbConn)
@@ -49,8 +45,7 @@ func (suite *repoTestSuite) SetupTest() {
 }
 
 func (suite *repoTestSuite) TearDownTest() {
-	suite.mockDB.Close()
-	suite.mockGormDB.Close()
+	suite.mockDbConn.GetDB().Close()
 }
 
 func (suite *repoTestSuite) TestShouldGetTodos() {
@@ -67,20 +62,24 @@ func (suite *repoTestSuite) TestShouldGetTodos() {
 		},
 	}
 
-	rows := sqlmock.NewRows([]string{"id", "title", "contents"})
+	reply := []map[string]interface{}{}
 	for _, todo := range expectedTodos {
-		rows.AddRow(todo.ID, todo.Title, todo.Contents)
+		reply = append(reply, map[string]interface{}{
+			"id":       todo.ID.String(),
+			"title":    todo.Title,
+			"contents": todo.Contents,
+		})
 	}
 
-	suite.mockSQL.ExpectQuery(regexp.QuoteMeta(
-		`SELECT * FROM "todos"`)).
-		WillReturnRows(rows)
+	suite.catcher.Reset().NewMock().
+		WithQuery(`SELECT * FROM "todos"`).
+		WithReply(reply)
 
 	actualTodos, err := suite.repo.getTodos()
 
-	assert.Nil(suite.T(), err)
-	assert.Equal(suite.T(), len(expectedTodos), len(actualTodos))
-	assert.Equal(suite.T(), expectedTodos, actualTodos)
+	require.NoError(suite.T(), err)
+	require.Equal(suite.T(), len(expectedTodos), len(actualTodos))
+	require.Equal(suite.T(), expectedTodos, actualTodos)
 }
 
 func (suite *repoTestSuite) TestShouldGetTodo() {
@@ -90,13 +89,16 @@ func (suite *repoTestSuite) TestShouldGetTodo() {
 		Contents: "todo contents",
 	}
 
-	rows := sqlmock.NewRows([]string{"id", "title", "contents"}).
-		AddRow(expected.ID, expected.Title, expected.Contents)
+	reply := []map[string]interface{}{{
+		"id":       expected.ID.String(),
+		"title":    expected.Title,
+		"contents": expected.Contents,
+	}}
 
-	suite.mockSQL.ExpectQuery(regexp.QuoteMeta(
-		`SELECT * FROM "todos" WHERE (id=$1)`)).
-		WithArgs(expected.ID).
-		WillReturnRows(rows)
+	suite.catcher.Reset().NewMock().
+		WithQuery(`SELECT * FROM "todos"`).
+		WithArgs(expected.ID.String()).
+		WithReply(reply)
 
 	actual, err := suite.repo.getTodoByTodoID(expected.ID.String())
 
@@ -108,12 +110,39 @@ func (suite *repoTestSuite) TestShouldBeNotFound() {
 	expectedError := common.ErrEntityNotFound
 	notExistsTodoID := uuid.NewV4()
 
-	suite.mockSQL.ExpectQuery(regexp.QuoteMeta(
-		`SELECT * FROM "todos" WHERE (id=$1)`)).
-		WithArgs(notExistsTodoID).
-		WillReturnError(gorm.ErrRecordNotFound)
+	suite.catcher.Reset().NewMock().
+		WithQuery(`SELECT * FROM "todos"`).
+		WithArgs(notExistsTodoID.String()).
+		WithError(gorm.ErrRecordNotFound)
 
 	_, actualError := suite.repo.getTodoByTodoID(notExistsTodoID.String())
 
 	require.Equal(suite.T(), expectedError, actualError)
+}
+
+func (suite *repoTestSuite) TestShouldBeCreated() {
+	willCreateTodo := Todo{
+		Title:    "new title",
+		Contents: "new contents",
+	}
+
+	reply := []map[string]interface{}{{
+		"id":       uuid.NewV4(),
+		"title":    willCreateTodo.Title,
+		"contents": willCreateTodo.Contents,
+	}}
+
+	suite.catcher.Reset().NewMock().
+		WithQuery(`INSERT INTO "todos"`).
+		WithReply(reply)
+
+	actual, err := suite.repo.createTodo(willCreateTodo)
+	expected := Todo{
+		ID:       actual.ID,
+		Title:    willCreateTodo.Title,
+		Contents: willCreateTodo.Contents,
+	}
+
+	require.Nil(suite.T(), err)
+	require.Equal(suite.T(), expected, actual)
 }
