@@ -29,8 +29,7 @@ func TestRepoTestSuite(t *testing.T) {
 }
 
 func (suite *repoTestSuite) SetupTest() {
-	mocket.Catcher.Register() // Safe register. Allowed multiple calls to save
-	mocket.Catcher.Logging = true
+	mocket.Catcher.Register()
 
 	mockGormDB, err := gorm.Open(mocket.DriverName, "connectionString")
 
