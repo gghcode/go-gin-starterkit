@@ -65,7 +65,7 @@ func (repo *repository) createTodo(todo Todo) (Todo, error) {
 	todo.ID = uuid.NewV4()
 
 	err := repo.dbConn.GetDB().
-		Create(todo).
+		Create(&todo).
 		Error
 
 	if err != nil {
