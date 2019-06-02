@@ -137,9 +137,10 @@ func (suite *repoTestSuite) TestShouldBeCreated() {
 
 	actual, err := suite.repo.createTodo(willCreateTodo)
 	expected := Todo{
-		ID:       actual.ID,
-		Title:    willCreateTodo.Title,
-		Contents: willCreateTodo.Contents,
+		ID:        actual.ID,
+		Title:     willCreateTodo.Title,
+		Contents:  willCreateTodo.Contents,
+		CreatedAt: actual.CreatedAt,
 	}
 
 	require.Nil(suite.T(), err)
