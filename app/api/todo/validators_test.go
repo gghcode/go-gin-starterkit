@@ -66,12 +66,10 @@ func (suite *validatorsTestSuite) TestBind() {
 		t.Run(testCase.description, func(t *testing.T) {
 			argTodo := testCase.todoModel
 			argTodoJSON, err := json.Marshal(argTodo)
-
 			require.NoError(t, err)
 
 			mockRequest, err := http.NewRequest("POST",
 				"/", bytes.NewBuffer(argTodoJSON))
-
 			require.NoError(t, err)
 
 			modelValidator := newTodoModelValidator()

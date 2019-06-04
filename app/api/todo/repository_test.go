@@ -7,6 +7,7 @@ import (
 	"github.com/gyuhwankim/go-gin-starterkit/db"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 
@@ -42,7 +43,7 @@ func (suite *repoTestSuite) SetupTest() {
 	suite.mockDbConn = db.NewConn(mockGormDB)
 	suite.repo = NewRepository(suite.mockDbConn)
 
-	require.NotNil(suite.T(), suite.repo)
+	assert.NotNil(suite.T(), suite.repo)
 }
 
 func (suite *repoTestSuite) TearDownTest() {
@@ -77,10 +78,10 @@ func (suite *repoTestSuite) TestShouldGetTodos() {
 		WithReply(reply)
 
 	actualTodos, err := suite.repo.getTodos()
-
 	require.NoError(suite.T(), err)
-	require.Equal(suite.T(), len(expectedTodos), len(actualTodos))
-	require.Equal(suite.T(), expectedTodos, actualTodos)
+
+	assert.Equal(suite.T(), len(expectedTodos), len(actualTodos))
+	assert.Equal(suite.T(), expectedTodos, actualTodos)
 }
 
 func (suite *repoTestSuite) TestShouldGetTodo() {
@@ -102,9 +103,9 @@ func (suite *repoTestSuite) TestShouldGetTodo() {
 		WithReply(reply)
 
 	actual, err := suite.repo.getTodoByTodoID(expected.ID.String())
-
 	require.NoError(suite.T(), err)
-	require.Equal(suite.T(), expected, actual)
+
+	assert.Equal(suite.T(), expected, actual)
 }
 
 func (suite *repoTestSuite) TestShouldBeNotFound() {
@@ -118,35 +119,32 @@ func (suite *repoTestSuite) TestShouldBeNotFound() {
 
 	_, actualError := suite.repo.getTodoByTodoID(notExistsTodoID.String())
 
-	require.Equal(suite.T(), expectedError, actualError)
+	assert.Equal(suite.T(), expectedError, actualError)
 }
 
 func (suite *repoTestSuite) TestShouldBeCreated() {
-	willCreateTodo := Todo{
+	expectedTodo := Todo{
 		Title:    "new title",
 		Contents: "new contents",
 	}
 
 	reply := []map[string]interface{}{{
 		"id":       uuid.NewV4(),
-		"title":    willCreateTodo.Title,
-		"contents": willCreateTodo.Contents,
+		"title":    expectedTodo.Title,
+		"contents": expectedTodo.Contents,
 	}}
 
 	suite.catcher.Reset().NewMock().
 		WithQuery(`INSERT INTO "todos"`).
 		WithReply(reply)
 
-	actual, err := suite.repo.createTodo(willCreateTodo)
-	expected := Todo{
-		ID:        actual.ID,
-		Title:     willCreateTodo.Title,
-		Contents:  willCreateTodo.Contents,
-		CreatedAt: actual.CreatedAt,
-	}
+	actualTodo, err := suite.repo.createTodo(expectedTodo)
+	require.NoError(suite.T(), err)
 
-	require.Nil(suite.T(), err)
-	require.Equal(suite.T(), expected, actual)
+	expectedTodo.ID = actualTodo.ID
+	expectedTodo.CreatedAt = actualTodo.CreatedAt
+
+	assert.Equal(suite.T(), expectedTodo, actualTodo)
 }
 
 func (suite *repoTestSuite) TestShouldBeUpdated() {
@@ -160,9 +158,9 @@ func (suite *repoTestSuite) TestShouldBeUpdated() {
 		WithArgs(expectedTodo.ID.String())
 
 	actualTodo, err := suite.repo.updateTodoByTodoID(expectedTodo.ID.String(), expectedTodo)
+	require.NoError(suite.T(), err)
 
-	require.Nil(suite.T(), err)
-	require.Equal(suite.T(), expectedTodo, actualTodo)
+	assert.Equal(suite.T(), expectedTodo, actualTodo)
 }
 
 func (suite *repoTestSuite) TestShouldBeNotFoundWhenUpdateTodo() {
@@ -179,7 +177,7 @@ func (suite *repoTestSuite) TestShouldBeNotFoundWhenUpdateTodo() {
 
 	_, actualError := suite.repo.updateTodoByTodoID(notExistsTodoID.String(), notExistsTodo)
 
-	require.Equal(suite.T(), expectedError, actualError)
+	assert.Equal(suite.T(), expectedError, actualError)
 }
 
 func (suite *repoTestSuite) TestShouldBeDeleted() {
@@ -197,9 +195,9 @@ func (suite *repoTestSuite) TestShouldBeDeleted() {
 		WithReply(reply)
 
 	actualTodoID, err := suite.repo.removeTodoByTodoID(expectedTodoID)
+	require.NoError(suite.T(), err)
 
-	require.Nil(suite.T(), err)
-	require.Equal(suite.T(), expectedTodoID, actualTodoID)
+	assert.Equal(suite.T(), expectedTodoID, actualTodoID)
 }
 
 func (suite *repoTestSuite) TestShouldBeNotFoundWhenRemoveTodo() {
@@ -212,5 +210,5 @@ func (suite *repoTestSuite) TestShouldBeNotFoundWhenRemoveTodo() {
 
 	_, actualError := suite.repo.removeTodoByTodoID(notExistsTodoID)
 
-	require.Equal(suite.T(), expectedError, actualError)
+	assert.Equal(suite.T(), expectedError, actualError)
 }
