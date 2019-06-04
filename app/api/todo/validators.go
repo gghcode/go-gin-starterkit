@@ -4,6 +4,12 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// TodoModelValidator valid todo model.
+type TodoModelValidator interface {
+	Bind(c *gin.Context) error
+	Todo() Todo
+}
+
 type todoModelValidator struct {
 	BindModel struct {
 		Title    string `json:"title" binding:"exists,min=4,max=100"`
@@ -13,8 +19,8 @@ type todoModelValidator struct {
 	todo Todo
 }
 
-func newTodoModelValidator() todoModelValidator {
-	return todoModelValidator{}
+func newTodoModelValidator() *todoModelValidator {
+	return &todoModelValidator{}
 }
 
 func (validator *todoModelValidator) Bind(c *gin.Context) error {
@@ -26,4 +32,8 @@ func (validator *todoModelValidator) Bind(c *gin.Context) error {
 	validator.todo.Contents = validator.BindModel.Contents
 
 	return nil
+}
+
+func (validator *todoModelValidator) Todo() Todo {
+	return validator.todo
 }

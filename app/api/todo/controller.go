@@ -1,19 +1,25 @@
 package todo
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"github.com/gyuhwankim/go-gin-starterkit/app/api/common"
 )
 
 // Controller handles http request.
 type Controller struct {
-	repo Repository
+	repo                  Repository
+	modelValidatorFactory func() TodoModelValidator
 }
 
 // NewController return new todo controller instance.
 func NewController(repo Repository) *Controller {
 	return &Controller{
 		repo: repo,
+		modelValidatorFactory: func() TodoModelValidator {
+			return newTodoModelValidator()
+		},
 	}
 }
 
@@ -27,15 +33,17 @@ func (controller Controller) RegisterRoutes(router gin.IRouter) {
 }
 
 func (controller *Controller) createTodo(ctx *gin.Context) {
-	var todo Todo
-
-	if err := ctx.BindJSON(&todo); err != nil {
-		ctx.AbortWithError(400, err)
+	todoModelValidator := controller.modelValidatorFactory()
+	if err := todoModelValidator.Bind(ctx); err != nil {
+		ctx.JSON(http.StatusBadRequest, common.NewError("error", err))
+		return
 	}
 
+	todo := todoModelValidator.Todo()
 	createdTodo, err := controller.repo.createTodo(todo)
 	if err != nil {
-		ctx.AbortWithError(500, err)
+		ctx.JSON(http.StatusInternalServerError, err)
+		return
 	}
 
 	ctx.JSON(201, createdTodo)
