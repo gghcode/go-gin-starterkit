@@ -10,11 +10,11 @@ import (
 	"testing"
 
 	"github.com/gyuhwankim/go-gin-starterkit/app/api/common"
-	"gopkg.in/go-playground/assert.v1"
 	"gopkg.in/go-playground/validator.v8"
 
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -59,8 +59,8 @@ func (suite *controllerTestSuite) TestShouldGetTodos() {
 
 	actual := getActualResponse(suite, req)
 
-	require.Equal(suite.T(), expectedCode, actual.Code)
-	requireEqualJSON(suite.T(), expectedTodos, actual.Body)
+	assert.Equal(suite.T(), expectedCode, actual.Code)
+	assertEqualJSON(suite.T(), expectedTodos, actual.Body)
 }
 
 func (suite *controllerTestSuite) TestShouldGetTodoByTodoID() {
@@ -81,8 +81,8 @@ func (suite *controllerTestSuite) TestShouldGetTodoByTodoID() {
 
 	actual := getActualResponse(suite, req)
 
-	require.Equal(suite.T(), expectedCode, actual.Code)
-	requireEqualJSON(suite.T(), expectedTodo, actual.Body)
+	assert.Equal(suite.T(), expectedCode, actual.Code)
+	assertEqualJSON(suite.T(), expectedTodo, actual.Body)
 }
 
 func (suite *controllerTestSuite) TestShouldBeNotFoundWhenGetTodoByTodoID() {
@@ -98,7 +98,7 @@ func (suite *controllerTestSuite) TestShouldBeNotFoundWhenGetTodoByTodoID() {
 
 	actual := getActualResponse(suite, req)
 
-	require.Equal(suite.T(), expectedCode, actual.Code)
+	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
 func (suite *controllerTestSuite) TestShouldBeInternalErrorWhenGetTodoByTodoID() {
@@ -114,7 +114,7 @@ func (suite *controllerTestSuite) TestShouldBeInternalErrorWhenGetTodoByTodoID()
 
 	actual := getActualResponse(suite, req)
 
-	require.Equal(suite.T(), expectedCode, actual.Code)
+	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
 func (suite *controllerTestSuite) TestShouldBeCreatedTodo() {
@@ -142,8 +142,8 @@ func (suite *controllerTestSuite) TestShouldBeCreatedTodo() {
 	actual := getActualResponse(suite, req)
 	expectedTodo.ID = expectedTodoID
 
-	require.Equal(suite.T(), expectedCode, actual.Code)
-	requireEqualJSON(suite.T(), expectedTodo, actual.Body)
+	assert.Equal(suite.T(), expectedCode, actual.Code)
+	assertEqualJSON(suite.T(), expectedTodo, actual.Body)
 }
 
 func (suite *controllerTestSuite) TestShouldBeBadRequestWhenCreateTodo() {
@@ -195,8 +195,8 @@ func (suite *controllerTestSuite) TestShouldBeUpdatedTodo() {
 
 	actual := getActualResponse(suite, req)
 
-	require.Equal(suite.T(), expectedCode, actual.Code)
-	requireEqualJSON(suite.T(), expectedTodo, actual.Body)
+	assert.Equal(suite.T(), expectedCode, actual.Code)
+	assertEqualJSON(suite.T(), expectedTodo, actual.Body)
 }
 
 func (suite *controllerTestSuite) TestShouldBeNotFoundWhenUpdateTodoByTodoID() {
@@ -220,7 +220,7 @@ func (suite *controllerTestSuite) TestShouldBeNotFoundWhenUpdateTodoByTodoID() {
 
 	actual := getActualResponse(suite, req)
 
-	require.Equal(suite.T(), expectedCode, actual.Code)
+	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
 func (suite *controllerTestSuite) TestShouldBeRemovedTodo() {
@@ -236,7 +236,7 @@ func (suite *controllerTestSuite) TestShouldBeRemovedTodo() {
 
 	actual := getActualResponse(suite, req)
 
-	require.Equal(suite.T(), expectedCode, actual.Code)
+	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
 func (suite *controllerTestSuite) TestShouldBeNotFoundWhenRemoveTodoByTodoID() {
@@ -252,7 +252,7 @@ func (suite *controllerTestSuite) TestShouldBeNotFoundWhenRemoveTodoByTodoID() {
 
 	actual := getActualResponse(suite, req)
 
-	require.Equal(suite.T(), expectedCode, actual.Code)
+	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
 func getActualResponse(suite *controllerTestSuite, req *http.Request) *httptest.ResponseRecorder {
@@ -263,7 +263,7 @@ func getActualResponse(suite *controllerTestSuite, req *http.Request) *httptest.
 	return recorder
 }
 
-func requireEqualJSON(t *testing.T, data interface{}, buf *bytes.Buffer) {
+func assertEqualJSON(t *testing.T, data interface{}, buf *bytes.Buffer) {
 	expected, err := json.Marshal(data)
 
 	require.NoError(t, err)
@@ -271,5 +271,5 @@ func requireEqualJSON(t *testing.T, data interface{}, buf *bytes.Buffer) {
 	actual, err := ioutil.ReadAll(buf)
 
 	require.NoError(t, err)
-	require.Equal(t, string(expected), string(actual))
+	assert.Equal(t, string(expected), string(actual))
 }
