@@ -10,7 +10,8 @@ import (
 	"testing"
 
 	"github.com/gyuhwankim/go-gin-starterkit/app/api/common"
-	"github.com/stretchr/testify/mock"
+	"gopkg.in/go-playground/assert.v1"
+	"gopkg.in/go-playground/validator.v8"
 
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
@@ -26,40 +27,13 @@ type controllerTestSuite struct {
 	mockRepo   *mockRepository
 }
 
-type mockRepository struct {
-	mock.Mock
-}
-
-func (repo *mockRepository) createTodo(todo Todo) (Todo, error) {
-	args := repo.Called(todo)
-	return args.Get(0).(Todo), args.Error(1)
-}
-
-func (repo *mockRepository) getTodos() ([]Todo, error) {
-	args := repo.Called()
-	return args.Get(0).([]Todo), args.Error(1)
-}
-
-func (repo *mockRepository) getTodoByTodoID(todoID string) (Todo, error) {
-	args := repo.Called(todoID)
-	return args.Get(0).(Todo), args.Error(1)
-}
-
-func (repo *mockRepository) updateTodoByTodoID(todoID string, todo Todo) (Todo, error) {
-	args := repo.Called(todoID, todo)
-	return args.Get(0).(Todo), args.Error(1)
-}
-
-func (repo *mockRepository) removeTodoByTodoID(todoID string) (string, error) {
-	args := repo.Called(todoID)
-	return args.String(0), args.Error(1)
-}
-
 func TestControllerTestSuite(t *testing.T) {
 	suite.Run(t, new(controllerTestSuite))
 }
 
 func (suite *controllerTestSuite) SetupTest() {
+	gin.SetMode(gin.TestMode)
+
 	suite.ginEngine = gin.New()
 	suite.mockRepo = &mockRepository{}
 	suite.controller = NewController(suite.mockRepo)
@@ -170,6 +144,34 @@ func (suite *controllerTestSuite) TestShouldBeCreatedTodo() {
 
 	require.Equal(suite.T(), expectedCode, actual.Code)
 	requireEqualJSON(suite.T(), expectedTodo, actual.Body)
+}
+
+func (suite *controllerTestSuite) TestShouldBeBadRequestWhenCreateTodo() {
+	expectedCode := http.StatusBadRequest
+	invalidTodo := Todo{
+		Title:    "",
+		Contents: "new contents",
+	}
+
+	mockTodoModelValidator := mockTodoModelValidator{}
+	suite.controller.modelValidatorFactory = func() TodoModelValidator {
+		return &mockTodoModelValidator
+	}
+
+	mockGinContext := gin.Context{}
+	mockTodoModelValidator.
+		On("Bind", &mockGinContext).
+		Return(validator.ValidationErrors{})
+
+	todoJSON, err := json.Marshal(invalidTodo)
+	require.NoError(suite.T(), err)
+
+	req, err := http.NewRequest("POST", "/", bytes.NewBuffer(todoJSON))
+	require.NoError(suite.T(), err)
+
+	actual := getActualResponse(suite, req)
+
+	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
 func (suite *controllerTestSuite) TestShouldBeUpdatedTodo() {

@@ -30,8 +30,10 @@ func TestRepoTestSuite(t *testing.T) {
 
 func (suite *repoTestSuite) SetupTest() {
 	mocket.Catcher.Register()
+	mocket.Catcher.Logging = false
 
 	mockGormDB, err := gorm.Open(mocket.DriverName, "connectionString")
+	mockGormDB.LogMode(false)
 
 	require.NoError(suite.T(), err)
 
