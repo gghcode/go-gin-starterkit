@@ -19,6 +19,7 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+
 type controllerTestSuite struct {
 	suite.Suite
 
@@ -61,6 +62,21 @@ func (suite *controllerTestSuite) TestShouldGetTodos() {
 
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 	assertEqualJSON(suite.T(), expectedTodos, actual.Body)
+}
+
+func (suite *controllerTestSuite) TestShouldInternalErrorWhenGetTodos() {
+	expectedCode := http.StatusInternalServerError
+
+	suite.mockRepo.
+		On("getTodos").
+		Return([]Todo{}, errors.New("MockError"))
+
+	req, err := http.NewRequest("GET", "/", nil)
+	require.NoError(suite.T(), err)
+
+	actual := getActualResponse(suite, req)
+
+	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
 func (suite *controllerTestSuite) TestShouldGetTodoByTodoID() {
@@ -154,7 +170,7 @@ func (suite *controllerTestSuite) TestShouldBeBadRequestWhenCreateTodo() {
 	}
 
 	mockTodoModelValidator := mockTodoModelValidator{}
-	suite.controller.modelValidatorFactory = func() TodoModelValidator {
+	suite.controller.todoValidatorFactory = func() TodoModelValidator {
 		return &mockTodoModelValidator
 	}
 
