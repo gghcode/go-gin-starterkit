@@ -22,12 +22,6 @@ func TestSuite(t *testing.T) {
 	suite.Run(t, new(validatorsTestSuite))
 }
 
-func (suite *validatorsTestSuite) SetupTest() {
-}
-
-func (suite *validatorsTestSuite) TearDownTest() {
-}
-
 func (suite *validatorsTestSuite) TestBind() {
 	testCases := []struct {
 		description     string
