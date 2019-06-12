@@ -50,7 +50,11 @@ func (suite *repoTestSuite) TearDownTest() {
 	suite.mockDbConn.GetDB().Close()
 }
 
-func (suite *repoTestSuite) TestShouldGetTodos() {
+func (suite *repoTestSuite) TestGetTodos() {
+	suite.Run("ExpectTodosFetched", suite.getTodosExpectTodosFetched)
+}
+
+func (suite *repoTestSuite) getTodosExpectTodosFetched() {
 	expectedTodos := []Todo{
 		Todo{
 			ID:       uuid.NewV4(),
@@ -84,7 +88,12 @@ func (suite *repoTestSuite) TestShouldGetTodos() {
 	assert.Equal(suite.T(), expectedTodos, actualTodos)
 }
 
-func (suite *repoTestSuite) TestShouldGetTodo() {
+func (suite *repoTestSuite) TestGetTodoByTodoID() {
+	suite.Run("ExpectTodoFetched", suite.getTodoExpectTodoFetched)
+	suite.Run("ExpectNotFoundErrReturn", suite.getTodoExpectNotFoundErrReturn)
+}
+
+func (suite *repoTestSuite) getTodoExpectTodoFetched() {
 	expected := Todo{
 		ID:       uuid.NewV4(),
 		Title:    "todo title",
@@ -108,7 +117,7 @@ func (suite *repoTestSuite) TestShouldGetTodo() {
 	assert.Equal(suite.T(), expected, actual)
 }
 
-func (suite *repoTestSuite) TestShouldBeNotFound() {
+func (suite *repoTestSuite) getTodoExpectNotFoundErrReturn() {
 	expectedError := common.ErrEntityNotFound
 	notExistsTodoID := uuid.NewV4()
 
@@ -122,7 +131,11 @@ func (suite *repoTestSuite) TestShouldBeNotFound() {
 	assert.Equal(suite.T(), expectedError, actualError)
 }
 
-func (suite *repoTestSuite) TestShouldBeCreated() {
+func (suite *repoTestSuite) TestCreateTodo() {
+	suite.Run("ExpectTodoCreated", suite.createTodoExpectTodoCreated)
+}
+
+func (suite *repoTestSuite) createTodoExpectTodoCreated() {
 	expectedTodo := Todo{
 		Title:    "new title",
 		Contents: "new contents",
@@ -147,7 +160,12 @@ func (suite *repoTestSuite) TestShouldBeCreated() {
 	assert.Equal(suite.T(), expectedTodo, actualTodo)
 }
 
-func (suite *repoTestSuite) TestShouldBeUpdated() {
+func (suite *repoTestSuite) TestUpdateTodoByTodoID() {
+	suite.Run("ExpectTodoUpdated", suite.updateExpectTodoUpdated)
+	suite.Run("ExpectNotFoundErrReturn", suite.updateExpectNotFoundErrReturn)
+}
+
+func (suite *repoTestSuite) updateExpectTodoUpdated() {
 	expectedTodo := Todo{
 		ID:       uuid.NewV4(),
 		Title:    "updated title",
@@ -157,13 +175,14 @@ func (suite *repoTestSuite) TestShouldBeUpdated() {
 	suite.catcher.Reset().NewMock().
 		WithArgs(expectedTodo.ID.String())
 
-	actualTodo, err := suite.repo.updateTodoByTodoID(expectedTodo.ID.String(), expectedTodo)
+	actualTodo, err := suite.repo.updateTodoByTodoID(
+		expectedTodo.ID.String(), expectedTodo)
 	require.NoError(suite.T(), err)
 
 	assert.Equal(suite.T(), expectedTodo, actualTodo)
 }
 
-func (suite *repoTestSuite) TestShouldBeNotFoundWhenUpdateTodo() {
+func (suite *repoTestSuite) updateExpectNotFoundErrReturn() {
 	expectedError := common.ErrEntityNotFound
 	notExistsTodoID := uuid.NewV4()
 	notExistsTodo := Todo{
@@ -175,12 +194,18 @@ func (suite *repoTestSuite) TestShouldBeNotFoundWhenUpdateTodo() {
 	suite.catcher.Reset().NewMock().
 		WithError(gorm.ErrRecordNotFound)
 
-	_, actualError := suite.repo.updateTodoByTodoID(notExistsTodoID.String(), notExistsTodo)
+	_, actualError := suite.repo.updateTodoByTodoID(
+		notExistsTodoID.String(), notExistsTodo)
 
 	assert.Equal(suite.T(), expectedError, actualError)
 }
 
-func (suite *repoTestSuite) TestShouldBeDeleted() {
+func (suite *repoTestSuite) TestRemoveTodoByTodoID() {
+	suite.Run("ExpectTodoRemoved", suite.removeExpectTodoRemoved)
+	suite.Run("ExpectNotFoundErrReturn", suite.removeExpectNotFoundErrReturn)
+}
+
+func (suite *repoTestSuite) removeExpectTodoRemoved() {
 	expectedTodoID := uuid.NewV4().String()
 
 	reply := []map[string]interface{}{{
@@ -200,7 +225,7 @@ func (suite *repoTestSuite) TestShouldBeDeleted() {
 	assert.Equal(suite.T(), expectedTodoID, actualTodoID)
 }
 
-func (suite *repoTestSuite) TestShouldBeNotFoundWhenRemoveTodo() {
+func (suite *repoTestSuite) removeExpectNotFoundErrReturn() {
 	expectedError := common.ErrEntityNotFound
 	notExistsTodoID := uuid.NewV4().String()
 
