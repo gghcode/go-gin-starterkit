@@ -18,6 +18,7 @@ require (
 	github.com/selvatico/go-mocket v1.0.7
 	github.com/spf13/viper v1.3.2
 	github.com/stretchr/testify v1.3.0
+	go.uber.org/dig v1.7.0
 	golang.org/x/net v0.0.0-20190501004415-9ce7a6920f09 // indirect
 	golang.org/x/sys v0.0.0-20190502141530-050d97668623 // indirect
 	golang.org/x/text v0.3.2 // indirect

@@ -36,7 +36,7 @@ jobs:
         working_directory: ~/go-gin-starterkit
         steps:
           - checkout
-          - run: go test ./...
+          - run: make unit
     
 workflows:
     version: 2
