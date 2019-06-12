@@ -19,7 +19,6 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
-
 type controllerTestSuite struct {
 	suite.Suite
 
@@ -41,7 +40,7 @@ func (suite *controllerTestSuite) SetupTest() {
 	suite.controller.RegisterRoutes(suite.ginEngine)
 }
 
-func (suite *controllerTestSuite) TestShouldGetTodos() {
+func (suite *controllerTestSuite) TestGetAllTodosExpectTodosFetched() {
 	expectedCode := http.StatusOK
 	expectedTodos := []Todo{
 		Todo{
@@ -64,7 +63,7 @@ func (suite *controllerTestSuite) TestShouldGetTodos() {
 	assertEqualJSON(suite.T(), expectedTodos, actual.Body)
 }
 
-func (suite *controllerTestSuite) TestShouldInternalErrorWhenGetTodos() {
+func (suite *controllerTestSuite) TestGetAllTodosExpectInternalErrReturn() {
 	expectedCode := http.StatusInternalServerError
 
 	suite.mockRepo.
@@ -79,7 +78,7 @@ func (suite *controllerTestSuite) TestShouldInternalErrorWhenGetTodos() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestShouldGetTodoByTodoID() {
+func (suite *controllerTestSuite) TestGetTodoByIDExpectTodoFetched() {
 	expectedCode := http.StatusOK
 	expectedTodoID := uuid.NewV4()
 	expectedTodo := Todo{
@@ -101,7 +100,7 @@ func (suite *controllerTestSuite) TestShouldGetTodoByTodoID() {
 	assertEqualJSON(suite.T(), expectedTodo, actual.Body)
 }
 
-func (suite *controllerTestSuite) TestShouldBeNotFoundWhenGetTodoByTodoID() {
+func (suite *controllerTestSuite) TestGetTodoByIDExpectNotFoundReturn() {
 	expectedCode := http.StatusNotFound
 	notExistsTodoID := uuid.NewV4()
 
@@ -117,7 +116,7 @@ func (suite *controllerTestSuite) TestShouldBeNotFoundWhenGetTodoByTodoID() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestShouldBeInternalErrorWhenGetTodoByTodoID() {
+func (suite *controllerTestSuite) TestGetTodoByIDExpectInternalErrorReturn() {
 	expectedCode := http.StatusInternalServerError
 	todoID := uuid.NewV4()
 
@@ -133,7 +132,7 @@ func (suite *controllerTestSuite) TestShouldBeInternalErrorWhenGetTodoByTodoID()
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestShouldBeCreatedTodo() {
+func (suite *controllerTestSuite) TestCreateTodoExpectTodoCreated() {
 	expectedCode := http.StatusCreated
 	expectedTodoID := uuid.NewV4()
 	expectedTodo := Todo{
@@ -162,7 +161,7 @@ func (suite *controllerTestSuite) TestShouldBeCreatedTodo() {
 	assertEqualJSON(suite.T(), expectedTodo, actual.Body)
 }
 
-func (suite *controllerTestSuite) TestShouldBeBadRequestWhenCreateTodo() {
+func (suite *controllerTestSuite) TestCreateTodoExpectBadRequestReturn() {
 	expectedCode := http.StatusBadRequest
 	invalidTodo := Todo{
 		Title:    "",
@@ -190,7 +189,7 @@ func (suite *controllerTestSuite) TestShouldBeBadRequestWhenCreateTodo() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestShouldBeUpdatedTodo() {
+func (suite *controllerTestSuite) TestUpdateTodoByIDExpectTodoUpdated() {
 	expectedCode := http.StatusOK
 	expectedTodo := Todo{
 		ID:       uuid.NewV4(),
@@ -215,7 +214,7 @@ func (suite *controllerTestSuite) TestShouldBeUpdatedTodo() {
 	assertEqualJSON(suite.T(), expectedTodo, actual.Body)
 }
 
-func (suite *controllerTestSuite) TestShouldBeNotFoundWhenUpdateTodoByTodoID() {
+func (suite *controllerTestSuite) TestUpdateTodoByIDExpectNotFoundReturn() {
 	expectedCode := http.StatusNotFound
 	notExistsTodo := Todo{
 		ID:       uuid.NewV4(),
@@ -239,7 +238,7 @@ func (suite *controllerTestSuite) TestShouldBeNotFoundWhenUpdateTodoByTodoID() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestShouldBeRemovedTodo() {
+func (suite *controllerTestSuite) TestRemoveTodoByIDExpectTodoRemoved() {
 	expectedCode := http.StatusNoContent
 	expectedTodoID := uuid.NewV4()
 
@@ -255,7 +254,7 @@ func (suite *controllerTestSuite) TestShouldBeRemovedTodo() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestShouldBeNotFoundWhenRemoveTodoByTodoID() {
+func (suite *controllerTestSuite) TestRemoveTodoByIDExpectNotFoundReturn() {
 	expectedCode := http.StatusNotFound
 	notExistsTodoID := uuid.NewV4()
 
