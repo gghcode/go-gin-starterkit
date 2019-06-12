@@ -76,14 +76,17 @@ func (repo *repository) createTodo(todo Todo) (Todo, error) {
 }
 
 func (repo *repository) updateTodoByTodoID(todoID string, todo Todo) (Todo, error) {
-	err := repo.dbConn.GetDB().
-		Where("id=?", todoID).
-		Updates(todo).
+	fetchedTodo, err := repo.getTodoByTodoID(todoID)
+	if err != nil {
+		return Todo{}, err
+	}
+
+	err = repo.dbConn.GetDB().
+		Model(&fetchedTodo).
+		Updates(&todo).
 		Error
 
-	if err == gorm.ErrRecordNotFound {
-		return Todo{}, common.ErrEntityNotFound
-	} else if err != nil {
+	if err != nil {
 		return Todo{}, err
 	}
 
@@ -91,16 +94,16 @@ func (repo *repository) updateTodoByTodoID(todoID string, todo Todo) (Todo, erro
 }
 
 func (repo *repository) removeTodoByTodoID(todoID string) (string, error) {
-	var todo Todo
+	todo, err := repo.getTodoByTodoID(todoID)
+	if err != nil {
+		return "", err
+	}
 
-	err := repo.dbConn.GetDB().
-		Where("id=?", todoID).
+	err = repo.dbConn.GetDB().
 		Delete(&todo).
 		Error
 
-	if err == gorm.ErrRecordNotFound {
-		return "", common.ErrEntityNotFound
-	} else if err != nil {
+	if err != nil {
 		return "", err
 	}
 
