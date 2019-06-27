@@ -3,8 +3,8 @@ package todo
 import (
 	"net/http"
 
+	"github.com/gghcode/go-gin-starterkit/app/api/common"
 	"github.com/gin-gonic/gin"
-	"github.com/gyuhwankim/go-gin-starterkit/app/api/common"
 )
 
 // Controller handles http request.

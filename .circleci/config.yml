@@ -38,9 +38,40 @@ jobs:
           - checkout
 
           - restore_cache:
-              keys: go-mod-v1-{{ checksum "go.sum" }}
+              keys: 
+                - go-mod-v1-{{ checksum "go.sum" }}
               
-          - run: go test ./...
+          - run: make unit
+
+          - save_cache:
+              key: go-mod-v1-{{ checksum "go.sum" }}
+              paths:
+                - "/go/pkg/mod"
+
+    run-integration:
+        machine:
+          image: circleci/classic:201808-01
+          docker_layer_caching: true
+        steps:
+          - checkout
+          - run:
+              name: Install Go 1.12.5
+              command: |
+                curl -L https://storage.googleapis.com/golang/go1.12.5.linux-amd64.tar.gz > ~/go.tar.gz
+                sudo tar -C ~ -xvf ~/go.tar.gz 1> /dev/null
+                sudo rm -rf /usr/local/go
+                sudo mv ~/go /usr/local
+        
+          - restore_cache:
+              keys: 
+                - go-mod-v1-{{ checksum "go.sum" }}
+
+          - run: make integration
+
+          - save_cache:
+              key: go-mod-v1-{{ checksum "go.sum" }}
+              paths:
+                - "/go/pkg/mod"
     
 workflows:
     version: 2
@@ -51,6 +82,10 @@ workflows:
             - run-unittest:
                 requires:
                   - build-binary
+            - run-integration:
+                requires:
+                  - build-binary
             - build-docker-image:
                 requires:
                   - run-unittest
+                  - run-integration
