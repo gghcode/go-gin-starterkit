@@ -9,15 +9,15 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gyuhwankim/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/app/api/common"
 	"gopkg.in/go-playground/validator.v8"
 
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"github.com/stretchr/testify/mock"
 )
 
 type mockRepository struct {

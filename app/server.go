@@ -1,9 +1,9 @@
 package app
 
 import (
+	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gin-gonic/gin"
-	"github.com/gyuhwankim/go-gin-starterkit/app/api/common"
-	"github.com/gyuhwankim/go-gin-starterkit/config"
 )
 
 // Controller is interface about api Controller.

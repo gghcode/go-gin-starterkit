@@ -1,8 +1,8 @@
 package todo
 
 import (
-	"github.com/gyuhwankim/go-gin-starterkit/app/api/common"
-	"github.com/gyuhwankim/go-gin-starterkit/db"
+	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 )

@@ -1,7 +1,7 @@
 package db
 
 import (
-	"github.com/gyuhwankim/go-gin-starterkit/config"
+	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/jinzhu/gorm"
 	"github.com/pkg/errors"
 

@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/gyuhwankim/go-gin-starterkit/app"
-	"github.com/gyuhwankim/go-gin-starterkit/config"
+	"github.com/gghcode/go-gin-starterkit/app"
+	"github.com/gghcode/go-gin-starterkit/config"
 )
 
 const (
