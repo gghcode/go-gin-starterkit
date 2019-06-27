@@ -36,7 +36,11 @@ jobs:
         working_directory: ~/go-gin-starterkit
         steps:
           - checkout
-          - run: make unit
+
+          - restore_cache:
+              keys: go-mod-v1-{{ checksum "go.sum" }}
+              
+          - run: go test ./...
     
 workflows:
     version: 2
