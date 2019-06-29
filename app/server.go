@@ -2,7 +2,9 @@ package app
 
 import (
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/app/api/todo"
 	"github.com/gghcode/go-gin-starterkit/config"
+	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/gin-gonic/gin"
 )
 
@@ -25,13 +27,19 @@ func NewServer(conf config.Configuration) *Server {
 		conf: conf,
 	}
 
-	registerControllerPrefix(server.core, "api", common.NewController())
-
 	return &server
 }
 
 // Run start to listen.
 func (server *Server) Run() error {
+	dbConn, err := db.NewConn(server.conf)
+	if err != nil {
+		return err
+	}
+
+	registerControllerPrefix(server.core, "api", common.NewController())
+	registerControllerPrefix(server.core, "api/todos", todo.NewController(todo.NewRepository(dbConn)))
+
 	addr := server.conf.Addr
 	return server.core.Run(addr)
 }
