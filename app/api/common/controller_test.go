@@ -16,6 +16,8 @@ func TestHealthy(t *testing.T) {
 }
 
 func setupTestcase() *gin.Engine {
+	gin.SetMode(gin.TestMode)
+
 	engine := gin.New()
 
 	controller := NewController()
