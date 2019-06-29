@@ -30,7 +30,7 @@ type repoIntegrationSuite struct {
 	testTodos []Todo
 }
 
-func TestRepoIntegration(t *testing.T) {
+func TestTodoRepoIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
@@ -49,27 +49,29 @@ func (suite *repoIntegrationSuite) SetupSuite() {
 	suite.dbConn = dbConn
 	suite.repo = NewRepository(suite.dbConn)
 
-	err = pushTestDataToDB(suite)
+	suite.testTodos, err = pushTestDataToDB(suite.repo)
 	require.NoError(suite.T(), err)
 }
 
-func pushTestDataToDB(suite *repoIntegrationSuite) error {
+func pushTestDataToDB(repo Repository) ([]Todo, error) {
 	todos := []Todo{
 		Todo{Title: "will fetched todo", Contents: "first new contents"},
 		Todo{Title: "will updated todo", Contents: "second new contents"},
 		Todo{Title: "will removed todo", Contents: "third new contents"},
 	}
 
+	var result []Todo
+
 	for _, todo := range todos {
-		insertedTodo, err := suite.repo.createTodo(todo)
+		insertedTodo, err := repo.createTodo(todo)
 		if err != nil {
-			return err
+			return nil, err
 		}
 
-		suite.testTodos = append(suite.testTodos, insertedTodo)
+		result = append(result, insertedTodo)
 	}
 
-	return nil
+	return result, nil
 }
 
 func (suite *repoIntegrationSuite) TearDownSuite() {

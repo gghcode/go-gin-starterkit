@@ -18,7 +18,7 @@ type validatorsTestSuite struct {
 	suite.Suite
 }
 
-func TestSuite(t *testing.T) {
+func TestTodoValidatorUnit(t *testing.T) {
 	suite.Run(t, new(validatorsTestSuite))
 }
 

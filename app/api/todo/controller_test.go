@@ -63,7 +63,7 @@ func (validator *mockTodoModelValidator) Todo() Todo {
 	return args.Get(0).(Todo)
 }
 
-type controllerTestSuite struct {
+type controllerUnitTestSuite struct {
 	suite.Suite
 
 	ginEngine  *gin.Engine
@@ -71,11 +71,11 @@ type controllerTestSuite struct {
 	mockRepo   *mockRepository
 }
 
-func TestControllerTestSuite(t *testing.T) {
-	suite.Run(t, new(controllerTestSuite))
+func TestTodoControllerUnit(t *testing.T) {
+	suite.Run(t, new(controllerUnitTestSuite))
 }
 
-func (suite *controllerTestSuite) SetupTest() {
+func (suite *controllerUnitTestSuite) SetupTest() {
 	gin.SetMode(gin.TestMode)
 
 	suite.ginEngine = gin.New()
@@ -84,7 +84,7 @@ func (suite *controllerTestSuite) SetupTest() {
 	suite.controller.RegisterRoutes(suite.ginEngine)
 }
 
-func (suite *controllerTestSuite) TestGetAllTodosExpectTodosFetched() {
+func (suite *controllerUnitTestSuite) TestGetAllTodosExpectTodosFetched() {
 	expectedCode := http.StatusOK
 	expectedTodos := []Todo{
 		Todo{
@@ -107,7 +107,7 @@ func (suite *controllerTestSuite) TestGetAllTodosExpectTodosFetched() {
 	assertEqualJSON(suite.T(), expectedTodos, actual.Body)
 }
 
-func (suite *controllerTestSuite) TestGetAllTodosExpectInternalErrReturn() {
+func (suite *controllerUnitTestSuite) TestGetAllTodosExpectInternalErrReturn() {
 	expectedCode := http.StatusInternalServerError
 
 	suite.mockRepo.
@@ -122,7 +122,7 @@ func (suite *controllerTestSuite) TestGetAllTodosExpectInternalErrReturn() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestGetTodoByIDExpectTodoFetched() {
+func (suite *controllerUnitTestSuite) TestGetTodoByIDExpectTodoFetched() {
 	expectedCode := http.StatusOK
 	expectedTodoID := uuid.NewV4()
 	expectedTodo := Todo{
@@ -144,7 +144,7 @@ func (suite *controllerTestSuite) TestGetTodoByIDExpectTodoFetched() {
 	assertEqualJSON(suite.T(), expectedTodo, actual.Body)
 }
 
-func (suite *controllerTestSuite) TestGetTodoByIDExpectNotFoundReturn() {
+func (suite *controllerUnitTestSuite) TestGetTodoByIDExpectNotFoundReturn() {
 	expectedCode := http.StatusNotFound
 	notExistsTodoID := uuid.NewV4()
 
@@ -160,7 +160,7 @@ func (suite *controllerTestSuite) TestGetTodoByIDExpectNotFoundReturn() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestGetTodoByIDExpectInternalErrorReturn() {
+func (suite *controllerUnitTestSuite) TestGetTodoByIDExpectInternalErrorReturn() {
 	expectedCode := http.StatusInternalServerError
 	todoID := uuid.NewV4()
 
@@ -176,7 +176,7 @@ func (suite *controllerTestSuite) TestGetTodoByIDExpectInternalErrorReturn() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestCreateTodoExpectTodoCreated() {
+func (suite *controllerUnitTestSuite) TestCreateTodoExpectTodoCreated() {
 	expectedCode := http.StatusCreated
 	expectedTodoID := uuid.NewV4()
 	expectedTodo := Todo{
@@ -205,7 +205,7 @@ func (suite *controllerTestSuite) TestCreateTodoExpectTodoCreated() {
 	assertEqualJSON(suite.T(), expectedTodo, actual.Body)
 }
 
-func (suite *controllerTestSuite) TestCreateTodoExpectBadRequestReturn() {
+func (suite *controllerUnitTestSuite) TestCreateTodoExpectBadRequestReturn() {
 	expectedCode := http.StatusBadRequest
 	invalidTodo := Todo{
 		Title:    "",
@@ -233,7 +233,7 @@ func (suite *controllerTestSuite) TestCreateTodoExpectBadRequestReturn() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestUpdateTodoByIDExpectTodoUpdated() {
+func (suite *controllerUnitTestSuite) TestUpdateTodoByIDExpectTodoUpdated() {
 	expectedCode := http.StatusOK
 	expectedTodo := Todo{
 		ID:       uuid.NewV4(),
@@ -258,7 +258,7 @@ func (suite *controllerTestSuite) TestUpdateTodoByIDExpectTodoUpdated() {
 	assertEqualJSON(suite.T(), expectedTodo, actual.Body)
 }
 
-func (suite *controllerTestSuite) TestUpdateTodoByIDExpectNotFoundReturn() {
+func (suite *controllerUnitTestSuite) TestUpdateTodoByIDExpectNotFoundReturn() {
 	expectedCode := http.StatusNotFound
 	notExistsTodo := Todo{
 		ID:       uuid.NewV4(),
@@ -282,7 +282,7 @@ func (suite *controllerTestSuite) TestUpdateTodoByIDExpectNotFoundReturn() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestRemoveTodoByIDExpectTodoRemoved() {
+func (suite *controllerUnitTestSuite) TestRemoveTodoByIDExpectTodoRemoved() {
 	expectedCode := http.StatusNoContent
 	expectedTodoID := uuid.NewV4()
 
@@ -298,7 +298,7 @@ func (suite *controllerTestSuite) TestRemoveTodoByIDExpectTodoRemoved() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func (suite *controllerTestSuite) TestRemoveTodoByIDExpectNotFoundReturn() {
+func (suite *controllerUnitTestSuite) TestRemoveTodoByIDExpectNotFoundReturn() {
 	expectedCode := http.StatusNotFound
 	notExistsTodoID := uuid.NewV4()
 
@@ -314,7 +314,7 @@ func (suite *controllerTestSuite) TestRemoveTodoByIDExpectNotFoundReturn() {
 	assert.Equal(suite.T(), expectedCode, actual.Code)
 }
 
-func getActualResponse(suite *controllerTestSuite, req *http.Request) *httptest.ResponseRecorder {
+func getActualResponse(suite *controllerUnitTestSuite, req *http.Request) *httptest.ResponseRecorder {
 	recorder := httptest.NewRecorder()
 
 	suite.ginEngine.ServeHTTP(recorder, req)
