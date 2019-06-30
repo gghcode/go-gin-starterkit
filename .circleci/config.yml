@@ -42,12 +42,17 @@ jobs:
               keys: 
                 - go-mod-v1-{{ checksum "go.sum" }}
               
-          - run: make unit
+          - run: make unit_ci
 
           - save_cache:
               key: go-mod-v1-{{ checksum "go.sum" }}
               paths:
                 - "/go/pkg/mod"
+
+          - run:
+              name: Upload codecov
+              command: |
+                bash <(curl -s https://codecov.io/bash) -F unittests
 
     run-integration:
         machine:
@@ -68,12 +73,17 @@ jobs:
               keys: 
                 - go-i-mod-v1-{{ checksum "go.sum" }}
 
-          - run: make integration
+          - run: make integration_ci
 
           - save_cache:
               key: go-i-mod-v1-{{ checksum "go.sum" }}
               paths:
                 - "home/circleci/.go_workspace/pkg/mod"
+
+          - run:
+              name: Upload codecov
+              command: |
+                bash <(curl -s https://codecov.io/bash) -F integration
     
 workflows:
     version: 2
@@ -89,5 +99,4 @@ workflows:
                   - build-binary
             - build-docker-image:
                 requires:
-                  - run-unittest
-                  - run-integration
+                  - build-binary
