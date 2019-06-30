@@ -1,39 +1,51 @@
 package common
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/gin-gonic/gin"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestHealthy(t *testing.T) {
-	engine := setupTestcase()
-	recorder := requestHTTP(engine, "GET", "/healthy")
+type controllerUnitTestSuite struct {
+	suite.Suite
 
-	assert.Equal(t, http.StatusOK, recorder.Code)
+	ginEngine  *gin.Engine
+	controller *Controller
 }
 
-func setupTestcase() *gin.Engine {
+func TestCommonControllerUnit(t *testing.T) {
+	suite.Run(t, new(controllerUnitTestSuite))
+}
+
+func (suite *controllerUnitTestSuite) SetupTest() {
 	gin.SetMode(gin.TestMode)
 
-	engine := gin.New()
-
-	controller := NewController()
-	controller.RegisterRoutes(engine)
-
-	return engine
+	suite.ginEngine = gin.New()
+	suite.controller = NewController()
+	suite.controller.RegisterRoutes(suite.ginEngine)
 }
 
-func requestHTTP(router http.Handler, method, path string) *httptest.ResponseRecorder {
-	req, err := http.NewRequest(method, path, nil)
-	if err != nil {
-		panic(err)
-	}
+func (suite *controllerUnitTestSuite) TestHealthyExpectedStatusOK() {
+	expectedStatus := http.StatusOK
 
-	recorder := httptest.NewRecorder()
-	router.ServeHTTP(recorder, req)
+	req, err := http.NewRequest("GET", "/healthy", nil)
+	require.NoError(suite.T(), err)
 
-	return recorder
+	res := getResponse(suite, req)
+	actualStatus := res.StatusCode
+
+	assert.Equal(suite.T(), expectedStatus, actualStatus)
+}
+
+func getResponse(suite *controllerUnitTestSuite, req *http.Request) *http.Response {
+	httpRecorder := httptest.NewRecorder()
+
+	suite.ginEngine.ServeHTTP(httpRecorder, req)
+
+	return httpRecorder.Result()
 }
