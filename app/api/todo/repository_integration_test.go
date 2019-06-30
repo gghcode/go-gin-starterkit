@@ -63,7 +63,7 @@ func pushTestDataToDB(repo Repository) ([]Todo, error) {
 	var result []Todo
 
 	for _, todo := range todos {
-		insertedTodo, err := repo.createTodo(todo)
+		insertedTodo, err := repo.CreateTodo(todo)
 		if err != nil {
 			return nil, err
 		}
@@ -79,7 +79,7 @@ func (suite *repoIntegrationSuite) TearDownSuite() {
 }
 
 func (suite *repoIntegrationSuite) TestGetTodosExpectTodosFetched() {
-	actualTodos, err := suite.repo.getTodos()
+	actualTodos, err := suite.repo.GetTodos()
 	require.NoError(suite.T(), err)
 
 	assert.NotNil(suite.T(), actualTodos)
@@ -88,7 +88,7 @@ func (suite *repoIntegrationSuite) TestGetTodosExpectTodosFetched() {
 func (suite *repoIntegrationSuite) TestGetTodoByIDExpectTodoFetched() {
 	expectedTodo := suite.testTodos[WillFetchedTodoIdx]
 
-	actualTodo, err := suite.repo.getTodoByTodoID(expectedTodo.ID.String())
+	actualTodo, err := suite.repo.GetTodoByTodoID(expectedTodo.ID.String())
 	require.NoError(suite.T(), err)
 
 	expectedTodo.CreatedAt = actualTodo.CreatedAt
@@ -100,7 +100,7 @@ func (suite *repoIntegrationSuite) TestGetTodoByIDExpectNotFoundErrReturn() {
 	expectedError := common.ErrEntityNotFound
 	notExistsTodoID := uuid.Nil
 
-	_, actualError := suite.repo.getTodoByTodoID(notExistsTodoID.String())
+	_, actualError := suite.repo.GetTodoByTodoID(notExistsTodoID.String())
 
 	assert.Equal(suite.T(), expectedError, actualError)
 }
@@ -111,7 +111,7 @@ func (suite *repoIntegrationSuite) TestCreateTodoExpectTodoCreated() {
 		Contents: "new contents",
 	}
 
-	actualTodo, err := suite.repo.createTodo(expectedTodo)
+	actualTodo, err := suite.repo.CreateTodo(expectedTodo)
 	require.NoError(suite.T(), err)
 
 	expectedTodo.ID = actualTodo.ID
@@ -125,7 +125,7 @@ func (suite *repoIntegrationSuite) TestUpdateTodoByIDExpectTodoUpdated() {
 	expectedTodo.Title = "updated title"
 	expectedTodo.Contents = "updated contents"
 
-	actualTodo, err := suite.repo.updateTodoByTodoID(
+	actualTodo, err := suite.repo.UpdateTodoByTodoID(
 		expectedTodo.ID.String(), expectedTodo)
 	require.NoError(suite.T(), err)
 
@@ -136,7 +136,7 @@ func (suite *repoIntegrationSuite) TestUpdateTodoByIDExpectNotFoundErrReturn() {
 	expectedError := common.ErrEntityNotFound
 	notExistsTodoID := uuid.Nil
 
-	_, actualError := suite.repo.updateTodoByTodoID(
+	_, actualError := suite.repo.UpdateTodoByTodoID(
 		notExistsTodoID.String(), Todo{})
 
 	assert.Equal(suite.T(), expectedError, actualError)
@@ -146,7 +146,7 @@ func (suite *repoIntegrationSuite) TestRemoveTodoByIDTodoExpectTodoRemoved() {
 	expectedTodo := suite.testTodos[WillRemovedTodoIdx]
 	expectedTodoID := expectedTodo.ID.String()
 
-	actualTodoID, err := suite.repo.removeTodoByTodoID(expectedTodoID)
+	actualTodoID, err := suite.repo.RemoveTodoByTodoID(expectedTodoID)
 	require.NoError(suite.T(), err)
 
 	assert.Equal(suite.T(), expectedTodoID, actualTodoID)
@@ -156,7 +156,7 @@ func (suite *repoIntegrationSuite) TestRemoveTodoByIDExpectNotFoundErrReturn() {
 	expectedError := common.ErrEntityNotFound
 	notExistsTodoID := uuid.Nil
 
-	_, actualError := suite.repo.removeTodoByTodoID(notExistsTodoID.String())
+	_, actualError := suite.repo.RemoveTodoByTodoID(notExistsTodoID.String())
 
 	assert.Equal(suite.T(), expectedError, actualError)
 }

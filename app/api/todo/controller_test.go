@@ -24,27 +24,27 @@ type mockRepository struct {
 	mock.Mock
 }
 
-func (repo *mockRepository) createTodo(todo Todo) (Todo, error) {
+func (repo *mockRepository) CreateTodo(todo Todo) (Todo, error) {
 	args := repo.Called(todo)
 	return args.Get(0).(Todo), args.Error(1)
 }
 
-func (repo *mockRepository) getTodos() ([]Todo, error) {
+func (repo *mockRepository) GetTodos() ([]Todo, error) {
 	args := repo.Called()
 	return args.Get(0).([]Todo), args.Error(1)
 }
 
-func (repo *mockRepository) getTodoByTodoID(todoID string) (Todo, error) {
+func (repo *mockRepository) GetTodoByTodoID(todoID string) (Todo, error) {
 	args := repo.Called(todoID)
 	return args.Get(0).(Todo), args.Error(1)
 }
 
-func (repo *mockRepository) updateTodoByTodoID(todoID string, todo Todo) (Todo, error) {
+func (repo *mockRepository) UpdateTodoByTodoID(todoID string, todo Todo) (Todo, error) {
 	args := repo.Called(todoID, todo)
 	return args.Get(0).(Todo), args.Error(1)
 }
 
-func (repo *mockRepository) removeTodoByTodoID(todoID string) (string, error) {
+func (repo *mockRepository) RemoveTodoByTodoID(todoID string) (string, error) {
 	args := repo.Called(todoID)
 	return args.String(0), args.Error(1)
 }
@@ -95,7 +95,7 @@ func (suite *controllerUnitTestSuite) TestGetAllTodosExpectTodosFetched() {
 	}
 
 	suite.mockRepo.
-		On("getTodos").
+		On("GetTodos").
 		Return(expectedTodos, nil)
 
 	req, err := http.NewRequest("GET", "/", nil)
@@ -111,7 +111,7 @@ func (suite *controllerUnitTestSuite) TestGetAllTodosExpectInternalErrReturn() {
 	expectedCode := http.StatusInternalServerError
 
 	suite.mockRepo.
-		On("getTodos").
+		On("GetTodos").
 		Return([]Todo{}, errors.New("MockError"))
 
 	req, err := http.NewRequest("GET", "/", nil)
@@ -132,7 +132,7 @@ func (suite *controllerUnitTestSuite) TestGetTodoByIDExpectTodoFetched() {
 	}
 
 	suite.mockRepo.
-		On("getTodoByTodoID", expectedTodoID.String()).
+		On("GetTodoByTodoID", expectedTodoID.String()).
 		Return(expectedTodo, nil)
 
 	req, err := http.NewRequest("GET", "/"+expectedTodoID.String(), nil)
@@ -149,7 +149,7 @@ func (suite *controllerUnitTestSuite) TestGetTodoByIDExpectNotFoundReturn() {
 	notExistsTodoID := uuid.NewV4()
 
 	suite.mockRepo.
-		On("getTodoByTodoID", notExistsTodoID.String()).
+		On("GetTodoByTodoID", notExistsTodoID.String()).
 		Return(Todo{}, common.ErrEntityNotFound)
 
 	req, err := http.NewRequest("GET", "/"+notExistsTodoID.String(), nil)
@@ -165,7 +165,7 @@ func (suite *controllerUnitTestSuite) TestGetTodoByIDExpectInternalErrorReturn()
 	todoID := uuid.NewV4()
 
 	suite.mockRepo.
-		On("getTodoByTodoID", todoID.String()).
+		On("GetTodoByTodoID", todoID.String()).
 		Return(Todo{}, errors.New("Occurred error."))
 
 	req, err := http.NewRequest("GET", "/"+todoID.String(), nil)
@@ -185,7 +185,7 @@ func (suite *controllerUnitTestSuite) TestCreateTodoExpectTodoCreated() {
 	}
 
 	suite.mockRepo.
-		On("createTodo", expectedTodo).
+		On("CreateTodo", expectedTodo).
 		Return(Todo{
 			ID:       expectedTodoID,
 			Title:    expectedTodo.Title,
@@ -242,7 +242,7 @@ func (suite *controllerUnitTestSuite) TestUpdateTodoByIDExpectTodoUpdated() {
 	}
 
 	suite.mockRepo.
-		On("updateTodoByTodoID", expectedTodo.ID.String(), expectedTodo).
+		On("UpdateTodoByTodoID", expectedTodo.ID.String(), expectedTodo).
 		Return(expectedTodo, nil)
 
 	expectedTodoJSON, err := json.Marshal(expectedTodo)
@@ -267,7 +267,7 @@ func (suite *controllerUnitTestSuite) TestUpdateTodoByIDExpectNotFoundReturn() {
 	}
 
 	suite.mockRepo.
-		On("updateTodoByTodoID", notExistsTodo.ID.String(), notExistsTodo).
+		On("UpdateTodoByTodoID", notExistsTodo.ID.String(), notExistsTodo).
 		Return(Todo{}, common.ErrEntityNotFound)
 
 	notExistsTodoJSON, err := json.Marshal(notExistsTodo)
@@ -287,7 +287,7 @@ func (suite *controllerUnitTestSuite) TestRemoveTodoByIDExpectTodoRemoved() {
 	expectedTodoID := uuid.NewV4()
 
 	suite.mockRepo.
-		On("removeTodoByTodoID", expectedTodoID.String()).
+		On("RemoveTodoByTodoID", expectedTodoID.String()).
 		Return(expectedTodoID.String(), nil)
 
 	req, err := http.NewRequest("DELETE", "/"+expectedTodoID.String(), nil)
@@ -303,7 +303,7 @@ func (suite *controllerUnitTestSuite) TestRemoveTodoByIDExpectNotFoundReturn() {
 	notExistsTodoID := uuid.NewV4()
 
 	suite.mockRepo.
-		On("removeTodoByTodoID", notExistsTodoID.String()).
+		On("RemoveTodoByTodoID", notExistsTodoID.String()).
 		Return("", common.ErrEntityNotFound)
 
 	req, err := http.NewRequest("DELETE", "/"+notExistsTodoID.String(), nil)

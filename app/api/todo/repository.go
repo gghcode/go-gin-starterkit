@@ -9,15 +9,15 @@ import (
 
 // Repository communications with db connection.
 type Repository interface {
-	createTodo(todo Todo) (Todo, error)
+	CreateTodo(todo Todo) (Todo, error)
 
-	getTodos() ([]Todo, error)
+	GetTodos() ([]Todo, error)
 
-	getTodoByTodoID(todoID string) (Todo, error)
+	GetTodoByTodoID(todoID string) (Todo, error)
 
-	updateTodoByTodoID(todoID string, todo Todo) (Todo, error)
+	UpdateTodoByTodoID(todoID string, todo Todo) (Todo, error)
 
-	removeTodoByTodoID(todoID string) (string, error)
+	RemoveTodoByTodoID(todoID string) (string, error)
 }
 
 type repository struct {
@@ -33,7 +33,7 @@ func NewRepository(dbConn *db.Conn) Repository {
 	}
 }
 
-func (repo *repository) getTodos() ([]Todo, error) {
+func (repo *repository) GetTodos() ([]Todo, error) {
 	var todos []Todo
 
 	db := repo.dbConn.GetDB()
@@ -44,7 +44,7 @@ func (repo *repository) getTodos() ([]Todo, error) {
 	return todos, nil
 }
 
-func (repo *repository) getTodoByTodoID(todoID string) (Todo, error) {
+func (repo *repository) GetTodoByTodoID(todoID string) (Todo, error) {
 	var todo Todo
 
 	err := repo.dbConn.GetDB().
@@ -61,7 +61,7 @@ func (repo *repository) getTodoByTodoID(todoID string) (Todo, error) {
 	return todo, nil
 }
 
-func (repo *repository) createTodo(todo Todo) (Todo, error) {
+func (repo *repository) CreateTodo(todo Todo) (Todo, error) {
 	todo.ID = uuid.NewV4()
 
 	err := repo.dbConn.GetDB().
@@ -75,8 +75,8 @@ func (repo *repository) createTodo(todo Todo) (Todo, error) {
 	return todo, nil
 }
 
-func (repo *repository) updateTodoByTodoID(todoID string, todo Todo) (Todo, error) {
-	fetchedTodo, err := repo.getTodoByTodoID(todoID)
+func (repo *repository) UpdateTodoByTodoID(todoID string, todo Todo) (Todo, error) {
+	fetchedTodo, err := repo.GetTodoByTodoID(todoID)
 	if err != nil {
 		return Todo{}, err
 	}
@@ -93,8 +93,8 @@ func (repo *repository) updateTodoByTodoID(todoID string, todo Todo) (Todo, erro
 	return todo, nil
 }
 
-func (repo *repository) removeTodoByTodoID(todoID string) (string, error) {
-	todo, err := repo.getTodoByTodoID(todoID)
+func (repo *repository) RemoveTodoByTodoID(todoID string) (string, error) {
+	todo, err := repo.GetTodoByTodoID(todoID)
 	if err != nil {
 		return "", err
 	}

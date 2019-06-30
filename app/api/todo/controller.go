@@ -40,7 +40,7 @@ func (controller *Controller) createTodo(ctx *gin.Context) {
 	}
 
 	bindTodo := todoModelValidator.Todo()
-	createdTodo, err := controller.repo.createTodo(bindTodo)
+	createdTodo, err := controller.repo.CreateTodo(bindTodo)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, err)
 		return
@@ -50,7 +50,7 @@ func (controller *Controller) createTodo(ctx *gin.Context) {
 }
 
 func (controller *Controller) getAllTodos(ctx *gin.Context) {
-	todos, err := controller.repo.getTodos()
+	todos, err := controller.repo.GetTodos()
 	if err != nil {
 		ctx.String(500, err.Error())
 		return
@@ -62,7 +62,7 @@ func (controller *Controller) getAllTodos(ctx *gin.Context) {
 func (controller *Controller) getTodoByTodoID(ctx *gin.Context) {
 	todoID := ctx.Param("id")
 
-	bindTodo, err := controller.repo.getTodoByTodoID(todoID)
+	bindTodo, err := controller.repo.GetTodoByTodoID(todoID)
 	if err == common.ErrEntityNotFound {
 		ctx.Status(404)
 		return
@@ -84,7 +84,7 @@ func (controller *Controller) updateTodoByTodoID(ctx *gin.Context) {
 		ctx.AbortWithError(400, err)
 	}
 
-	bindTodo, err := controller.repo.updateTodoByTodoID(todoID, bindTodo)
+	bindTodo, err := controller.repo.UpdateTodoByTodoID(todoID, bindTodo)
 	if err == common.ErrEntityNotFound {
 		ctx.AbortWithError(404, err)
 	} else if err != nil {
@@ -97,7 +97,7 @@ func (controller *Controller) updateTodoByTodoID(ctx *gin.Context) {
 func (controller *Controller) removeTodoByTodoID(ctx *gin.Context) {
 	todoID := ctx.Param("id")
 
-	removedTodoID, err := controller.repo.removeTodoByTodoID(todoID)
+	removedTodoID, err := controller.repo.RemoveTodoByTodoID(todoID)
 	if err == common.ErrEntityNotFound {
 		ctx.AbortWithError(404, err)
 		return
