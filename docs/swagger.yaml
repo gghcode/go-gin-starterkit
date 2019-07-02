@@ -1,0 +1,182 @@
+basePath: '{{.BasePath}}'
+definitions:
+  common.APIError:
+    properties:
+      message:
+        type: string
+    type: object
+  common.ErrorResponse:
+    properties:
+      errors:
+        items:
+          $ref: '#/definitions/common.APIError'
+        type: array
+    type: object
+  model.CreateTodoRequest:
+    properties:
+      contents:
+        example: <new contents>
+        type: string
+      title:
+        example: <new title>
+        type: string
+    required:
+    - contents
+    - title
+    type: object
+  model.TodoResponse:
+    properties:
+      contents:
+        type: string
+      create_at:
+        type: string
+      id:
+        type: string
+      title:
+        type: string
+    type: object
+host: '{{.Host}}'
+info:
+  contact:
+    email: gyuhwan.a.kim@gmail.com
+    name: API Support
+  description: This is a sample gin starter server.
+  license:
+    name: MIT
+    url: https://github.com/gghcode/go-gin-starterkit/blob/master/LICENSE
+  termsOfService: http://swagger.io/terms/
+  title: Go Gin Starter API
+  version: "1.0"
+paths:
+  /api/healthy:
+    get:
+      description: Get server healthy
+      responses:
+        "200": {}
+      tags:
+      - App API
+  /api/todos:
+    get:
+      consumes:
+      - application/json
+      description: Get all todos
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            items:
+              $ref: '#/definitions/model.TodoResponse'
+            type: array
+      tags:
+      - Todo API
+    post:
+      consumes:
+      - application/json
+      description: Create new todo
+      parameters:
+      - description: todo payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateTodoRequest'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ok
+          schema:
+            $ref: '#/definitions/model.TodoResponse'
+            type: object
+        "400":
+          description: Invalid todo payload
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+      tags:
+      - Todo API
+  /api/todos/{id}:
+    delete:
+      description: Remove todo by todo id
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: ok
+          schema:
+            type: string
+        "404":
+          description: Not found entity
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+      tags:
+      - Todo API
+    get:
+      description: Get todo by todo id
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/model.TodoResponse'
+            type: object
+        "404":
+          description: Not found entity
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+      tags:
+      - Todo API
+    put:
+      description: Update todo by todo id
+      parameters:
+      - description: Todo ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: todo payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/model.CreateTodoRequest'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/model.TodoResponse'
+            type: object
+        "400":
+          description: Invalid todo payload
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+        "404":
+          description: Not found entity
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+      tags:
+      - Todo API
+swagger: "2.0"

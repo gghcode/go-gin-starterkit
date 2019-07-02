@@ -90,7 +90,7 @@ func (repo *repository) UpdateTodoByTodoID(todoID string, todo Todo) (Todo, erro
 		return Todo{}, err
 	}
 
-	return todo, nil
+	return fetchedTodo, nil
 }
 
 func (repo *repository) RemoveTodoByTodoID(todoID string) (string, error) {

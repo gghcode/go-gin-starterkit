@@ -5,7 +5,11 @@ import (
 	"github.com/gghcode/go-gin-starterkit/app/api/todo"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
+	_ "github.com/gghcode/go-gin-starterkit/docs"
 	"github.com/gin-gonic/gin"
+
+	ginSwagger "github.com/swaggo/gin-swagger"
+	swaggerFiles "github.com/swaggo/gin-swagger/swaggerFiles"
 )
 
 // Controller is interface about api Controller.
@@ -37,11 +41,17 @@ func (server *Server) Run() error {
 		return err
 	}
 
+	attachSwaggerUI(server.core)
+
 	registerControllerPrefix(server.core, "api", common.NewController())
 	registerControllerPrefix(server.core, "api/todos", todo.NewController(todo.NewRepository(dbConn)))
 
 	addr := server.conf.Addr
 	return server.core.Run(addr)
+}
+
+func attachSwaggerUI(core *gin.Engine) {
+	core.GET("/docs/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 }
 
 func registerController(core *gin.Engine, controller Controller) {

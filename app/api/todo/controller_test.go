@@ -235,20 +235,20 @@ func (suite *controllerUnitTestSuite) TestCreateTodoExpectBadRequestReturn() {
 
 func (suite *controllerUnitTestSuite) TestUpdateTodoByIDExpectTodoUpdated() {
 	expectedCode := http.StatusOK
+	expectedTodoID := uuid.NewV4()
 	expectedTodo := Todo{
-		ID:       uuid.NewV4(),
 		Title:    "updated title",
 		Contents: "updated contents",
 	}
 
 	suite.mockRepo.
-		On("UpdateTodoByTodoID", expectedTodo.ID.String(), expectedTodo).
+		On("UpdateTodoByTodoID", expectedTodoID.String(), expectedTodo).
 		Return(expectedTodo, nil)
 
 	expectedTodoJSON, err := json.Marshal(expectedTodo)
 	require.NoError(suite.T(), err)
 
-	req, err := http.NewRequest("PUT", "/"+expectedTodo.ID.String(),
+	req, err := http.NewRequest("PUT", "/"+expectedTodoID.String(),
 		bytes.NewBuffer(expectedTodoJSON))
 	require.NoError(suite.T(), err)
 
@@ -261,7 +261,7 @@ func (suite *controllerUnitTestSuite) TestUpdateTodoByIDExpectTodoUpdated() {
 func (suite *controllerUnitTestSuite) TestUpdateTodoByIDExpectNotFoundReturn() {
 	expectedCode := http.StatusNotFound
 	notExistsTodo := Todo{
-		ID:       uuid.NewV4(),
+		ID:       uuid.Nil,
 		Title:    "not exists title",
 		Contents: "not exists contents",
 	}
@@ -283,7 +283,7 @@ func (suite *controllerUnitTestSuite) TestUpdateTodoByIDExpectNotFoundReturn() {
 }
 
 func (suite *controllerUnitTestSuite) TestRemoveTodoByIDExpectTodoRemoved() {
-	expectedCode := http.StatusNoContent
+	expectedCode := http.StatusOK
 	expectedTodoID := uuid.NewV4()
 
 	suite.mockRepo.
