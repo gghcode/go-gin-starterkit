@@ -17,6 +17,10 @@ func (c Controller) RegisterRoutes(router gin.IRouter) {
 	router.Handle("GET", "/healthy", c.getHealthy)
 }
 
+// @Description Get server healthy
+// @Success 200
+// @Tags App API
+// @Router /api/healthy [get]
 func (c *Controller) getHealthy(ctx *gin.Context) {
 	ctx.Status(200)
 }

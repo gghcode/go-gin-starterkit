@@ -206,7 +206,7 @@ func (suite *controllerIntegrationTestSuite) TestUpdateTodoByIDExpectNotFoundRet
 }
 
 func (suite *controllerIntegrationTestSuite) TestRemoveTodoByIDExpectTodoRemoved() {
-	expectedStatus := http.StatusNoContent
+	expectedStatus := http.StatusOK
 	expectedTodo := suite.testTodos[WillRemovedTodoIdx]
 
 	req, err := http.NewRequest("DELETE", "/"+expectedTodo.ID.String(), nil)

@@ -6,19 +6,38 @@ import (
 
 var (
 	// ErrEntityNotFound was occurred when can't found entity.
-	ErrEntityNotFound = errors.New("Entity was not found.")
+	ErrEntityNotFound = errors.New("Entity was not found")
 
 	// ErrInvalidUUID was occurred when uuid format was invalid.
-	ErrInvalidUUID = errors.New("UUID was invalid.")
+	ErrInvalidUUID = errors.New("UUID was invalid")
 )
 
-type CommonError struct {
-	Errors map[string]interface{} `json:"errors"`
+// ErrorResponse is app response.
+type ErrorResponse struct {
+	Errors []APIError `json:"errors"`
 }
 
-func NewError(key string, err error) CommonError {
-	res := CommonError{}
-	res.Errors = make(map[string]interface{})
-	res.Errors[key] = err.Error()
-	return res
+// AddError add new error at ErrorResponse.
+func (errResponse ErrorResponse) AddError(err error) ErrorResponse {
+	errResponse.Errors = append(errResponse.Errors, APIError{
+		Message: err.Error(),
+	})
+
+	return errResponse
+}
+
+// APIError is http error object.
+type APIError struct {
+	Message string `json:"message"`
+}
+
+// NewErrResp is return new error response.
+func NewErrResp(err error) ErrorResponse {
+	return ErrorResponse{
+		Errors: []APIError{
+			APIError{
+				Message: err.Error(),
+			},
+		},
+	}
 }

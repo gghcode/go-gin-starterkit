@@ -1,14 +1,18 @@
 FROM golang:1.12.4-alpine AS builder
-ENV GO111MODULE=on
-
 RUN apk add --no-cache git
+
+ENV GO111MODULE=on
 
 WORKDIR /app
 
+COPY go.mod .
+COPY go.sum .
+
+RUN go mod download
+
 COPY . .
 
-RUN apk add --no-cache git && go mod download && \
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build
 
 FROM scratch
 

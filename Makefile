@@ -11,6 +11,10 @@ dependency:
 	@go get -v ./...
 
 
+live:
+	@gin -p 8081 -a 8080 run main.go
+
+
 unit: dependency
 	@go test -race -v -short ./...
 
