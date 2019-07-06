@@ -38,7 +38,7 @@ func (repo *repository) CreateUser(user User) (User, error) {
 		Error
 
 	if err != nil {
-		return User{}, err
+		return emptyUser, err
 	}
 
 	return user, nil
@@ -52,7 +52,6 @@ func (repo *repository) GetUserByUserName(userName string) (User, error) {
 		First(&result).
 		Error
 
-	emptyUser := User{}
 	if err == gorm.ErrRecordNotFound {
 		return emptyUser, common.ErrEntityNotFound
 	} else if err != nil {
@@ -70,7 +69,6 @@ func (repo *repository) GetUserByUserID(userID int64) (User, error) {
 		First(&result).
 		Error
 
-	emptyUser := User{}
 	if err == gorm.ErrRecordNotFound {
 		return emptyUser, common.ErrEntityNotFound
 	} else if err != nil {
@@ -81,8 +79,6 @@ func (repo *repository) GetUserByUserID(userID int64) (User, error) {
 }
 
 func (repo *repository) UpdateUserByUserID(userID int64, user User) (User, error) {
-	emptyUser := User{}
-
 	entity, err := repo.GetUserByUserID(userID)
 	if err != nil {
 		return emptyUser, err
@@ -103,7 +99,7 @@ func (repo *repository) UpdateUserByUserID(userID int64, user User) (User, error
 func (repo *repository) RemoveUserByUserID(userID int64) (int64, error) {
 	entity, err := repo.GetUserByUserID(userID)
 	if err != nil {
-		return EmptyUserID, err
+		return emptyUser.ID, err
 	}
 
 	err = repo.dbConn.GetDB().
@@ -111,7 +107,7 @@ func (repo *repository) RemoveUserByUserID(userID int64) (int64, error) {
 		Error
 
 	if err != nil {
-		return EmptyUserID, err
+		return emptyUser.ID, err
 	}
 
 	return userID, nil
