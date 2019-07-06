@@ -4,8 +4,7 @@ import (
 	"time"
 )
 
-// EmptyUserID is empty of user id
-const EmptyUserID = int64(0)
+var emptyUser = User{}
 
 // User is user data model
 type User struct {

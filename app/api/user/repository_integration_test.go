@@ -124,7 +124,7 @@ func (suite *repoIntegrationSuite) TestGetUserByIDExpectUserFetched() {
 
 func (suite *repoIntegrationSuite) TestGetUserByIDExpectNotFoundErrReturn() {
 	expectedError := common.ErrEntityNotFound
-	notExistsUserID := EmptyUserID
+	notExistsUserID := emptyUser.ID
 
 	_, actualError := suite.repo.GetUserByUserID(notExistsUserID)
 
@@ -143,7 +143,7 @@ func (suite *repoIntegrationSuite) TestUpdateUserByIDExpectUserUpdated() {
 
 func (suite *repoIntegrationSuite) TestUpdateUserByIDExpectNotFoundErrReturn() {
 	expectedError := common.ErrEntityNotFound
-	notExistsUserID := EmptyUserID
+	notExistsUserID := emptyUser.ID
 
 	_, actualError := suite.repo.UpdateUserByUserID(notExistsUserID, User{})
 
@@ -161,7 +161,7 @@ func (suite *repoIntegrationSuite) TestRemoveUserByUserIDExpectUserRemoved() {
 
 func (suite *repoIntegrationSuite) TestRemoveUserByIDExpectNotFoundErrReturn() {
 	expectedError := common.ErrEntityNotFound
-	notExistsTodoID := EmptyUserID
+	notExistsTodoID := emptyUser.ID
 
 	_, actualError := suite.repo.RemoveUserByUserID(notExistsTodoID)
 
