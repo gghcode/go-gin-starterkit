@@ -27,4 +27,5 @@ require (
 	golang.org/x/tools v0.0.0-20190628222527-fb37f6ba8261 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1
 	gopkg.in/go-playground/validator.v8 v8.18.2
+	gotest.tools v2.2.0+incompatible
 )
