@@ -144,12 +144,11 @@ func (suite *repoIntegrationSuite) TestUpdateTodoByIDExpectNotFoundErrReturn() {
 
 func (suite *repoIntegrationSuite) TestRemoveTodoByIDTodoExpectTodoRemoved() {
 	expectedTodo := suite.testTodos[WillRemovedTodoIdx]
-	expectedTodoID := expectedTodo.ID.String()
 
-	actualTodoID, err := suite.repo.RemoveTodoByTodoID(expectedTodoID)
+	actualTodo, err := suite.repo.RemoveTodoByTodoID(expectedTodo.ID.String())
 	require.NoError(suite.T(), err)
 
-	assert.Equal(suite.T(), expectedTodoID, actualTodoID)
+	assert.Equal(suite.T(), expectedTodo, actualTodo)
 }
 
 func (suite *repoIntegrationSuite) TestRemoveTodoByIDExpectNotFoundErrReturn() {
