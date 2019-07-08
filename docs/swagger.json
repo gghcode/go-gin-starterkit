@@ -46,7 +46,7 @@
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/model.TodoResponse"
+                                "$ref": "#/definitions/todo.TodoResponse"
                             }
                         }
                     }
@@ -71,7 +71,7 @@
                         "required": true,
                         "schema": {
                             "type": "object",
-                            "$ref": "#/definitions/model.CreateTodoRequest"
+                            "$ref": "#/definitions/todo.CreateTodoRequest"
                         }
                     }
                 ],
@@ -80,7 +80,7 @@
                         "description": "ok",
                         "schema": {
                             "type": "object",
-                            "$ref": "#/definitions/model.TodoResponse"
+                            "$ref": "#/definitions/todo.TodoResponse"
                         }
                     },
                     "400": {
@@ -116,7 +116,7 @@
                         "description": "ok",
                         "schema": {
                             "type": "object",
-                            "$ref": "#/definitions/model.TodoResponse"
+                            "$ref": "#/definitions/todo.TodoResponse"
                         }
                     },
                     "404": {
@@ -151,7 +151,7 @@
                         "required": true,
                         "schema": {
                             "type": "object",
-                            "$ref": "#/definitions/model.CreateTodoRequest"
+                            "$ref": "#/definitions/todo.CreateTodoRequest"
                         }
                     }
                 ],
@@ -160,7 +160,7 @@
                         "description": "ok",
                         "schema": {
                             "type": "object",
-                            "$ref": "#/definitions/model.TodoResponse"
+                            "$ref": "#/definitions/todo.TodoResponse"
                         }
                     },
                     "400": {
@@ -197,10 +197,11 @@
                     }
                 ],
                 "responses": {
-                    "204": {
+                    "200": {
                         "description": "ok",
                         "schema": {
-                            "type": "string"
+                            "type": "object",
+                            "$ref": "#/definitions/todo.TodoResponse"
                         }
                     },
                     "404": {
@@ -234,7 +235,7 @@
                 }
             }
         },
-        "model.CreateTodoRequest": {
+        "todo.CreateTodoRequest": {
             "type": "object",
             "required": [
                 "contents",
@@ -251,7 +252,7 @@
                 }
             }
         },
-        "model.TodoResponse": {
+        "todo.TodoResponse": {
             "type": "object",
             "properties": {
                 "contents": {

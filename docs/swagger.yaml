@@ -12,7 +12,7 @@ definitions:
           $ref: '#/definitions/common.APIError'
         type: array
     type: object
-  model.CreateTodoRequest:
+  todo.CreateTodoRequest:
     properties:
       contents:
         example: <new contents>
@@ -24,7 +24,7 @@ definitions:
     - contents
     - title
     type: object
-  model.TodoResponse:
+  todo.TodoResponse:
     properties:
       contents:
         type: string
@@ -67,7 +67,7 @@ paths:
           description: ok
           schema:
             items:
-              $ref: '#/definitions/model.TodoResponse'
+              $ref: '#/definitions/todo.TodoResponse'
             type: array
       tags:
       - Todo API
@@ -81,7 +81,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/model.CreateTodoRequest'
+          $ref: '#/definitions/todo.CreateTodoRequest'
           type: object
       produces:
       - application/json
@@ -89,7 +89,7 @@ paths:
         "201":
           description: ok
           schema:
-            $ref: '#/definitions/model.TodoResponse'
+            $ref: '#/definitions/todo.TodoResponse'
             type: object
         "400":
           description: Invalid todo payload
@@ -110,10 +110,11 @@ paths:
       produces:
       - application/json
       responses:
-        "204":
+        "200":
           description: ok
           schema:
-            type: string
+            $ref: '#/definitions/todo.TodoResponse'
+            type: object
         "404":
           description: Not found entity
           schema:
@@ -135,7 +136,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/model.TodoResponse'
+            $ref: '#/definitions/todo.TodoResponse'
             type: object
         "404":
           description: Not found entity
@@ -157,7 +158,7 @@ paths:
         name: payload
         required: true
         schema:
-          $ref: '#/definitions/model.CreateTodoRequest'
+          $ref: '#/definitions/todo.CreateTodoRequest'
           type: object
       produces:
       - application/json
@@ -165,7 +166,7 @@ paths:
         "200":
           description: ok
           schema:
-            $ref: '#/definitions/model.TodoResponse'
+            $ref: '#/definitions/todo.TodoResponse'
             type: object
         "400":
           description: Invalid todo payload

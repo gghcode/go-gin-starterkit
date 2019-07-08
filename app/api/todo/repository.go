@@ -1,11 +1,15 @@
 package todo
 
 import (
+	"time"
+
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
 	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 )
+
+var EmptyTodo = Todo{}
 
 // Repository communications with db connection.
 type Repository interface {
@@ -17,7 +21,7 @@ type Repository interface {
 
 	UpdateTodoByTodoID(todoID string, todo Todo) (Todo, error)
 
-	RemoveTodoByTodoID(todoID string) (string, error)
+	RemoveTodoByTodoID(todoID string) (Todo, error)
 }
 
 type repository struct {
@@ -53,9 +57,9 @@ func (repo *repository) GetTodoByTodoID(todoID string) (Todo, error) {
 		Error
 
 	if err == gorm.ErrRecordNotFound {
-		return Todo{}, common.ErrEntityNotFound
+		return EmptyTodo, common.ErrEntityNotFound
 	} else if err != nil {
-		return Todo{}, err
+		return EmptyTodo, err
 	}
 
 	return todo, nil
@@ -63,13 +67,14 @@ func (repo *repository) GetTodoByTodoID(todoID string) (Todo, error) {
 
 func (repo *repository) CreateTodo(todo Todo) (Todo, error) {
 	todo.ID = uuid.NewV4()
+	todo.CreatedAt = time.Now().Unix()
 
 	err := repo.dbConn.GetDB().
 		Create(&todo).
 		Error
 
 	if err != nil {
-		return Todo{}, err
+		return EmptyTodo, err
 	}
 
 	return todo, nil
@@ -78,7 +83,7 @@ func (repo *repository) CreateTodo(todo Todo) (Todo, error) {
 func (repo *repository) UpdateTodoByTodoID(todoID string, todo Todo) (Todo, error) {
 	fetchedTodo, err := repo.GetTodoByTodoID(todoID)
 	if err != nil {
-		return Todo{}, err
+		return EmptyTodo, err
 	}
 
 	err = repo.dbConn.GetDB().
@@ -87,16 +92,16 @@ func (repo *repository) UpdateTodoByTodoID(todoID string, todo Todo) (Todo, erro
 		Error
 
 	if err != nil {
-		return Todo{}, err
+		return EmptyTodo, err
 	}
 
 	return fetchedTodo, nil
 }
 
-func (repo *repository) RemoveTodoByTodoID(todoID string) (string, error) {
+func (repo *repository) RemoveTodoByTodoID(todoID string) (Todo, error) {
 	todo, err := repo.GetTodoByTodoID(todoID)
 	if err != nil {
-		return "", err
+		return EmptyTodo, err
 	}
 
 	err = repo.dbConn.GetDB().
@@ -104,8 +109,8 @@ func (repo *repository) RemoveTodoByTodoID(todoID string) (string, error) {
 		Error
 
 	if err != nil {
-		return "", err
+		return EmptyTodo, err
 	}
 
-	return todoID, nil
+	return todo, nil
 }

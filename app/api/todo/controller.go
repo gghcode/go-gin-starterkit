@@ -9,17 +9,13 @@ import (
 
 // Controller handles http request.
 type Controller struct {
-	repo                 Repository
-	todoValidatorFactory func() TodoModelValidator
+	repo Repository
 }
 
 // NewController return new bindTodo controller instance.
 func NewController(repo Repository) *Controller {
 	return &Controller{
 		repo: repo,
-		todoValidatorFactory: func() TodoModelValidator {
-			return newTodoModelValidator()
-		},
 	}
 }
 
@@ -35,32 +31,37 @@ func (controller Controller) RegisterRoutes(router gin.IRouter) {
 // @Description Create new todo
 // @Accept json
 // @Produce json
-// @Param payload body model.CreateTodoRequest true "todo payload"
-// @Success 201 {object} model.TodoResponse "ok"
+// @Param payload body todo.CreateTodoRequest true "todo payload"
+// @Success 201 {object} todo.TodoResponse "ok"
 // @Failure 400 {object} common.ErrorResponse "Invalid todo payload"
 // @Tags Todo API
 // @Router /api/todos [post]
 func (controller *Controller) createTodo(ctx *gin.Context) {
-	todoModelValidator := controller.todoValidatorFactory()
-	if err := todoModelValidator.Bind(ctx); err != nil {
+	var dtoReq CreateTodoRequest
+
+	if err := ctx.ShouldBindJSON(&dtoReq); err != nil {
 		ctx.JSON(http.StatusBadRequest, common.NewErrResp(err))
 		return
 	}
 
-	bindTodo := todoModelValidator.Todo()
-	createdTodo, err := controller.repo.CreateTodo(bindTodo)
+	todoEntity := Todo{
+		Title:    dtoReq.Title,
+		Contents: dtoReq.Contents,
+	}
+
+	createdTodo, err := controller.repo.CreateTodo(todoEntity)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, common.NewErrResp(err))
 		return
 	}
 
-	ctx.JSON(http.StatusCreated, createdTodo)
+	ctx.JSON(http.StatusCreated, createdTodo.TodoResponse())
 }
 
 // @Description Get all todos
 // @Accept json
 // @Produce json
-// @Success 200 {array} model.TodoResponse "ok"
+// @Success 200 {array} todo.TodoResponse "ok"
 // @Tags Todo API
 // @Router /api/todos [get]
 func (controller *Controller) getAllTodos(ctx *gin.Context) {
@@ -76,7 +77,7 @@ func (controller *Controller) getAllTodos(ctx *gin.Context) {
 // @Description Get todo by todo id
 // @Produce json
 // @Param id path string true "Todo ID"
-// @Success 200 {object} model.TodoResponse "ok"
+// @Success 200 {object} todo.TodoResponse "ok"
 // @Failure 404 {object} common.ErrorResponse "Not found entity"
 // @Tags Todo API
 // @Router /api/todos/{id} [get]
@@ -92,14 +93,14 @@ func (controller *Controller) getTodoByTodoID(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, bindTodo)
+	ctx.JSON(http.StatusOK, bindTodo.TodoResponse())
 }
 
 // @Description Update todo by todo id
 // @Produce json
 // @Param id path string true "Todo ID"
-// @Param payload body model.CreateTodoRequest true "todo payload"
-// @Success 200 {object} model.TodoResponse "ok"
+// @Param payload body todo.CreateTodoRequest true "todo payload"
+// @Success 200 {object} todo.TodoResponse "ok"
 // @Failure 400 {object} common.ErrorResponse "Invalid todo payload"
 // @Failure 404 {object} common.ErrorResponse "Not found entity"
 // @Tags Todo API
@@ -107,14 +108,18 @@ func (controller *Controller) getTodoByTodoID(ctx *gin.Context) {
 func (controller *Controller) updateTodoByTodoID(ctx *gin.Context) {
 	todoID := ctx.Param("id")
 
-	todoModelValidator := controller.todoValidatorFactory()
-	if err := todoModelValidator.Bind(ctx); err != nil {
+	var dtoReq CreateTodoRequest
+	if err := ctx.ShouldBindJSON(&dtoReq); err != nil {
 		ctx.JSON(http.StatusBadRequest, common.NewErrResp(err))
 		return
 	}
 
-	bindTodo := todoModelValidator.Todo()
-	todo, err := controller.repo.UpdateTodoByTodoID(todoID, bindTodo)
+	todoEntity := Todo{
+		Title:    dtoReq.Title,
+		Contents: dtoReq.Contents,
+	}
+
+	todo, err := controller.repo.UpdateTodoByTodoID(todoID, todoEntity)
 	if err == common.ErrEntityNotFound {
 		ctx.JSON(http.StatusNotFound, common.NewErrResp(err))
 		return
@@ -123,20 +128,20 @@ func (controller *Controller) updateTodoByTodoID(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, todo)
+	ctx.JSON(http.StatusOK, todo.TodoResponse())
 }
 
 // @Description Remove todo by todo id
 // @Produce json
 // @Param id path string true "Todo ID"
-// @Success 200 {string} string "ok"
+// @Success 200 {object} todo.TodoResponse "ok"
 // @Failure 404 {object} common.ErrorResponse "Not found entity"
 // @Tags Todo API
 // @Router /api/todos/{id} [delete]
 func (controller *Controller) removeTodoByTodoID(ctx *gin.Context) {
 	todoID := ctx.Param("id")
 
-	removedTodoID, err := controller.repo.RemoveTodoByTodoID(todoID)
+	removedTodo, err := controller.repo.RemoveTodoByTodoID(todoID)
 	if err == common.ErrEntityNotFound {
 		ctx.JSON(http.StatusNotFound, common.NewErrResp(err))
 		return
@@ -145,5 +150,5 @@ func (controller *Controller) removeTodoByTodoID(ctx *gin.Context) {
 		return
 	}
 
-	ctx.JSON(http.StatusOK, removedTodoID)
+	ctx.JSON(http.StatusOK, removedTodo.TodoResponse())
 }
