@@ -1,6 +1,6 @@
 version: "3.7"
 services:
-  test_postgres:
+  postgres:
     image: postgres:11.3-alpine
     environment:
       - POSTGRES_USER=postgres
