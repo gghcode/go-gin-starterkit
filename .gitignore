@@ -26,6 +26,7 @@ config.yaml
 *.dll
 *.so
 *.dylib
+go-gin-starterkit
 
 # Test binary, built with `go test -c`
 *.test
