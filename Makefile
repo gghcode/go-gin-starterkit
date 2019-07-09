@@ -22,21 +22,17 @@ unit_ci:
 	@go test -race -coverprofile=coverage.txt -covermode=atomic -v -short ./...
 
 
-integration: dependency docker-up
+integration: dependency docker_up
 	@go test -race -v -run Integration ./...
-	@make docker-down
+	@$(MAKE) docker_down
 
-integration_ci: dependency docker-up
+integration_ci: dependency docker_up
 	@go test -race -coverprofile=coverage.txt -covermode=atomic -v -run Integration ./...
-	@make docker-down
+	@$(MAKE) docker_down
 
 
-docker-up: docker-down
-	@docker-compose -f docker-compose.integration.yml up -d
+docker_up: docker_down
+	@docker-compose -p integration -f docker-compose.integration.yml up -d
 
-docker-down:
-	@docker-compose -f docker-compose.integration.yml down -v
-
-
-fmt:
-	@go fmt ./...
+docker_down:
+	@docker-compose -p integration -f docker-compose.integration.yml down -v
