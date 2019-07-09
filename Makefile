@@ -12,7 +12,7 @@ dependency:
 
 
 live:
-	@gin -p 8081 -a 8080 run main.go
+	@gin -b go-gin-starterkit -p 8081 -a 8080 run main.go
 
 
 unit: dependency
