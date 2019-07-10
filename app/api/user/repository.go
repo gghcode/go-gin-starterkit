@@ -16,7 +16,7 @@ type Repository interface {
 
 	UpdateUserByUserID(userID int64, user User) (User, error)
 
-	RemoveUserByUserID(userID int64) (int64, error)
+	RemoveUserByUserID(userID int64) (User, error)
 }
 
 type repository struct {
@@ -96,10 +96,10 @@ func (repo *repository) UpdateUserByUserID(userID int64, user User) (User, error
 	return entity, nil
 }
 
-func (repo *repository) RemoveUserByUserID(userID int64) (int64, error) {
+func (repo *repository) RemoveUserByUserID(userID int64) (User, error) {
 	entity, err := repo.GetUserByUserID(userID)
 	if err != nil {
-		return emptyUser.ID, err
+		return emptyUser, err
 	}
 
 	err = repo.dbConn.GetDB().
@@ -107,8 +107,8 @@ func (repo *repository) RemoveUserByUserID(userID int64) (int64, error) {
 		Error
 
 	if err != nil {
-		return emptyUser.ID, err
+		return emptyUser, err
 	}
 
-	return userID, nil
+	return entity, nil
 }
