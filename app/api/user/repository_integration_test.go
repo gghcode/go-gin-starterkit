@@ -98,13 +98,12 @@ func (suite *repoIntegrationSuite) TestGetUserByUserNameExpectedUserFetched() {
 	actualUser, err := suite.repo.GetUserByUserName(expectedUser.UserName)
 	require.NoError(suite.T(), err)
 
-	assert.Equal(suite.T(), expectedUser.ID, actualUser.ID)
-	assert.Equal(suite.T(), expectedUser.UserName, actualUser.UserName)
+	assertUserEqual(suite.T(), expectedUser, actualUser)
 }
 
 func (suite *repoIntegrationSuite) TestGetUserByUserNameExpectedNotFoundErrReturn() {
-	expectedError := common.ErrEntityNotFound
 	notExistsUserName := "NOT_EXISTS_USER_NAME"
+	expectedError := common.ErrEntityNotFound
 
 	_, actualError := suite.repo.GetUserByUserName(notExistsUserName)
 
@@ -117,14 +116,12 @@ func (suite *repoIntegrationSuite) TestGetUserByIDExpectUserFetched() {
 	actualUser, err := suite.repo.GetUserByUserID(expectedUser.ID)
 	require.NoError(suite.T(), err)
 
-	expectedUser.CreatedAt = actualUser.CreatedAt
-
 	assertUserEqual(suite.T(), expectedUser, actualUser)
 }
 
 func (suite *repoIntegrationSuite) TestGetUserByIDExpectNotFoundErrReturn() {
-	expectedError := common.ErrEntityNotFound
 	notExistsUserID := emptyUser.ID
+	expectedError := common.ErrEntityNotFound
 
 	_, actualError := suite.repo.GetUserByUserID(notExistsUserID)
 
@@ -142,8 +139,8 @@ func (suite *repoIntegrationSuite) TestUpdateUserByIDExpectUserUpdated() {
 }
 
 func (suite *repoIntegrationSuite) TestUpdateUserByIDExpectNotFoundErrReturn() {
-	expectedError := common.ErrEntityNotFound
 	notExistsUserID := emptyUser.ID
+	expectedError := common.ErrEntityNotFound
 
 	_, actualError := suite.repo.UpdateUserByUserID(notExistsUserID, User{})
 
@@ -153,15 +150,15 @@ func (suite *repoIntegrationSuite) TestUpdateUserByIDExpectNotFoundErrReturn() {
 func (suite *repoIntegrationSuite) TestRemoveUserByUserIDExpectUserRemoved() {
 	expectedUser := suite.testUsers[WillRemovedEntityIdx]
 
-	actualUserID, err := suite.repo.RemoveUserByUserID(expectedUser.ID)
+	actualUser, err := suite.repo.RemoveUserByUserID(expectedUser.ID)
 	require.NoError(suite.T(), err)
 
-	assert.Equal(suite.T(), expectedUser.ID, actualUserID)
+	assertUserEqual(suite.T(), expectedUser, actualUser)
 }
 
 func (suite *repoIntegrationSuite) TestRemoveUserByIDExpectNotFoundErrReturn() {
-	expectedError := common.ErrEntityNotFound
 	notExistsTodoID := emptyUser.ID
+	expectedError := common.ErrEntityNotFound
 
 	_, actualError := suite.repo.RemoveUserByUserID(notExistsTodoID)
 
