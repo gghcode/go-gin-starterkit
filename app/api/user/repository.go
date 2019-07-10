@@ -1,9 +1,12 @@
 package user
 
 import (
+	"time"
+
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
 	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/jinzhu/gorm"
+	pg "github.com/lib/pq"
 )
 
 // Repository communications with db connection.
@@ -33,12 +36,19 @@ func NewRepository(dbConn *db.Conn) Repository {
 }
 
 func (repo *repository) CreateUser(user User) (User, error) {
+	user.CreatedAt = time.Now().Unix()
+
 	err := repo.dbConn.GetDB().
 		Create(&user).
 		Error
 
-	if err != nil {
-		return emptyUser, err
+	if pgErr, ok := err.(*pg.Error); ok {
+		if pgErr.Code == "23505" {
+			// handle duplicate insert
+			return EmptyUser, common.ErrAlreadyExistsEntity
+		}
+	} else if err != nil {
+		return EmptyUser, err
 	}
 
 	return user, nil
@@ -53,9 +63,9 @@ func (repo *repository) GetUserByUserName(userName string) (User, error) {
 		Error
 
 	if err == gorm.ErrRecordNotFound {
-		return emptyUser, common.ErrEntityNotFound
+		return EmptyUser, common.ErrEntityNotFound
 	} else if err != nil {
-		return emptyUser, err
+		return EmptyUser, err
 	}
 
 	return result, nil
@@ -70,9 +80,9 @@ func (repo *repository) GetUserByUserID(userID int64) (User, error) {
 		Error
 
 	if err == gorm.ErrRecordNotFound {
-		return emptyUser, common.ErrEntityNotFound
+		return EmptyUser, common.ErrEntityNotFound
 	} else if err != nil {
-		return emptyUser, err
+		return EmptyUser, err
 	}
 
 	return result, nil
@@ -81,7 +91,7 @@ func (repo *repository) GetUserByUserID(userID int64) (User, error) {
 func (repo *repository) UpdateUserByUserID(userID int64, user User) (User, error) {
 	entity, err := repo.GetUserByUserID(userID)
 	if err != nil {
-		return emptyUser, err
+		return EmptyUser, err
 	}
 
 	err = repo.dbConn.GetDB().
@@ -90,7 +100,7 @@ func (repo *repository) UpdateUserByUserID(userID int64, user User) (User, error
 		Error
 
 	if err != nil {
-		return emptyUser, err
+		return EmptyUser, err
 	}
 
 	return entity, nil
@@ -99,7 +109,7 @@ func (repo *repository) UpdateUserByUserID(userID int64, user User) (User, error
 func (repo *repository) RemoveUserByUserID(userID int64) (User, error) {
 	entity, err := repo.GetUserByUserID(userID)
 	if err != nil {
-		return emptyUser, err
+		return EmptyUser, err
 	}
 
 	err = repo.dbConn.GetDB().
@@ -107,7 +117,7 @@ func (repo *repository) RemoveUserByUserID(userID int64) (User, error) {
 		Error
 
 	if err != nil {
-		return emptyUser, err
+		return EmptyUser, err
 	}
 
 	return entity, nil
