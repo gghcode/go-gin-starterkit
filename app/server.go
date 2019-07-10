@@ -3,6 +3,7 @@ package app
 import (
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
 	"github.com/gghcode/go-gin-starterkit/app/api/todo"
+	"github.com/gghcode/go-gin-starterkit/app/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
 	_ "github.com/gghcode/go-gin-starterkit/docs"
@@ -45,6 +46,7 @@ func (server *Server) Run() error {
 
 	registerControllerPrefix(server.core, "api", common.NewController())
 	registerControllerPrefix(server.core, "api/todos", todo.NewController(todo.NewRepository(dbConn)))
+	registerControllerPrefix(server.core, "api/users", user.NewController(user.NewRepository(dbConn)))
 
 	addr := server.conf.Addr
 	return server.core.Run(addr)

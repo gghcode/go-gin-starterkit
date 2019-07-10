@@ -5,8 +5,15 @@ import (
 )
 
 var (
+	// ErrParsingFailed was occurred when request invalid syntax.
+	ErrParsingFailed = errors.New("parsing is failed by invalid syntax")
+
 	// ErrEntityNotFound was occurred when can't found entity.
 	ErrEntityNotFound = errors.New("Entity was not found")
+
+	// ErrAlreadyExistsEntity was occurred
+	// when insert data that contain duplicated key.
+	ErrAlreadyExistsEntity = errors.New("Already exists entity")
 
 	// ErrInvalidUUID was occurred when uuid format was invalid.
 	ErrInvalidUUID = errors.New("UUID was invalid")

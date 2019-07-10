@@ -35,6 +35,33 @@ definitions:
       title:
         type: string
     type: object
+  user.CreateUserRequest:
+    properties:
+      password:
+        example: <new password>
+        type: string
+      user_name:
+        example: <new user name>
+        type: string
+    required:
+    - password
+    - user_name
+    type: object
+  user.UpdateUserRequest:
+    properties:
+      user_name:
+        example: <new user name>
+        type: string
+    type: object
+  user.UserResponse:
+    properties:
+      create_at:
+        type: string
+      id:
+        type: integer
+      user_name:
+        type: string
+    type: object
 host: '{{.Host}}'
 info:
   contact:
@@ -180,4 +207,117 @@ paths:
             type: object
       tags:
       - Todo API
+  /api/users:
+    post:
+      consumes:
+      - application/json
+      description: Create new user
+      parameters:
+      - description: user payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/user.CreateUserRequest'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: ok
+          schema:
+            $ref: '#/definitions/user.UserResponse'
+            type: object
+        "400":
+          description: Invalid user payload
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+      tags:
+      - User API
+  /api/users/{id}:
+    delete:
+      description: Remove user by user id
+      parameters:
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/user.UserResponse'
+            type: object
+        "404":
+          description: Not found entity
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+      tags:
+      - User API
+    put:
+      consumes:
+      - application/json
+      description: Update new user by user id
+      parameters:
+      - description: user id
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: user payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/user.UpdateUserRequest'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/user.UserResponse'
+            type: object
+        "400":
+          description: Invalid user payload
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+        "404":
+          description: Not found entity
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+      tags:
+      - User API
+  /api/users/{username}:
+    get:
+      description: Get user by username
+      parameters:
+      - description: User Name
+        in: path
+        name: username
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/user.UserResponse'
+            type: object
+        "404":
+          description: Not found entity
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+      tags:
+      - User API
 swagger: "2.0"

@@ -1,9 +1,10 @@
-package user
+package user_test
 
 import (
 	"testing"
 
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/app/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/jinzhu/gorm"
@@ -24,9 +25,9 @@ type repoIntegrationSuite struct {
 	gormDB *gorm.DB
 	dbConn *db.Conn
 
-	repo Repository
+	repo user.Repository
 
-	testUsers []User
+	testUsers []user.User
 }
 
 func TestUserRepoIntegration(t *testing.T) {
@@ -46,20 +47,20 @@ func (suite *repoIntegrationSuite) SetupSuite() {
 	require.NoError(suite.T(), err)
 
 	suite.dbConn = dbConn
-	suite.repo = NewRepository(suite.dbConn)
+	suite.repo = user.NewRepository(suite.dbConn)
 
-	suite.testUsers, err = pushTestDataToDB(suite.repo)
+	suite.testUsers, err = pushTestDataToDB(suite.repo, "repo")
 	require.NoError(suite.T(), err)
 }
 
-func pushTestDataToDB(repo Repository) ([]User, error) {
-	users := []User{
-		User{UserName: "willFetchedUser", PasswordHash: []byte("passwordHash")},
-		User{UserName: "willUpdatedUser", PasswordHash: []byte("passwordHash")},
-		User{UserName: "willRemovedUser", PasswordHash: []byte("passwordHash")},
+func pushTestDataToDB(repo user.Repository, prefix string) ([]user.User, error) {
+	users := []user.User{
+		user.User{UserName: prefix + "willFetchedUser", PasswordHash: []byte("passwordHash")},
+		user.User{UserName: prefix + "willUpdatedUser", PasswordHash: []byte("passwordHash")},
+		user.User{UserName: prefix + "willRemovedUser", PasswordHash: []byte("passwordHash")},
 	}
 
-	var result []User
+	var result []user.User
 
 	for _, user := range users {
 		insertedUser, err := repo.CreateUser(user)
@@ -77,8 +78,8 @@ func (suite *repoIntegrationSuite) TearDownSuite() {
 	suite.dbConn.Close()
 }
 
-func (suite *repoIntegrationSuite) TestCreateUserExpectedUserCreated() {
-	expectedUser := User{
+func (suite *repoIntegrationSuite) TestCreateUserExpectUserCreated() {
+	expectedUser := user.User{
 		UserName:     "newUser",
 		PasswordHash: []byte("passwordHash"),
 	}
@@ -92,7 +93,20 @@ func (suite *repoIntegrationSuite) TestCreateUserExpectedUserCreated() {
 	assertUserEqual(suite.T(), expectedUser, actualUser)
 }
 
-func (suite *repoIntegrationSuite) TestGetUserByUserNameExpectedUserFetched() {
+func (suite *repoIntegrationSuite) TestCreateUserExpectAlreadyExistsErrReturn() {
+	alreadyExistsUser := user.User{
+		UserName:     suite.testUsers[WillFetchedEntityIdx].UserName,
+		PasswordHash: []byte("password"),
+	}
+
+	expectedErr := common.ErrAlreadyExistsEntity
+
+	_, actualErr := suite.repo.CreateUser(alreadyExistsUser)
+
+	assert.Equal(suite.T(), expectedErr, actualErr)
+}
+
+func (suite *repoIntegrationSuite) TestGetUserByUserNameExpectUserFetched() {
 	expectedUser := suite.testUsers[WillFetchedEntityIdx]
 
 	actualUser, err := suite.repo.GetUserByUserName(expectedUser.UserName)
@@ -101,7 +115,7 @@ func (suite *repoIntegrationSuite) TestGetUserByUserNameExpectedUserFetched() {
 	assertUserEqual(suite.T(), expectedUser, actualUser)
 }
 
-func (suite *repoIntegrationSuite) TestGetUserByUserNameExpectedNotFoundErrReturn() {
+func (suite *repoIntegrationSuite) TestGetUserByUserNameExpectNotFoundErrReturn() {
 	notExistsUserName := "NOT_EXISTS_USER_NAME"
 	expectedError := common.ErrEntityNotFound
 
@@ -120,7 +134,7 @@ func (suite *repoIntegrationSuite) TestGetUserByIDExpectUserFetched() {
 }
 
 func (suite *repoIntegrationSuite) TestGetUserByIDExpectNotFoundErrReturn() {
-	notExistsUserID := emptyUser.ID
+	notExistsUserID := user.EmptyUser.ID
 	expectedError := common.ErrEntityNotFound
 
 	_, actualError := suite.repo.GetUserByUserID(notExistsUserID)
@@ -139,15 +153,15 @@ func (suite *repoIntegrationSuite) TestUpdateUserByIDExpectUserUpdated() {
 }
 
 func (suite *repoIntegrationSuite) TestUpdateUserByIDExpectNotFoundErrReturn() {
-	notExistsUserID := emptyUser.ID
+	notExistsUserID := user.EmptyUser.ID
 	expectedError := common.ErrEntityNotFound
 
-	_, actualError := suite.repo.UpdateUserByUserID(notExistsUserID, User{})
+	_, actualError := suite.repo.UpdateUserByUserID(notExistsUserID, user.User{})
 
 	assert.Equal(suite.T(), expectedError, actualError)
 }
 
-func (suite *repoIntegrationSuite) TestRemoveUserByUserIDExpectUserRemoved() {
+func (suite *repoIntegrationSuite) TestRemoveUserByIDExpectUserRemoved() {
 	expectedUser := suite.testUsers[WillRemovedEntityIdx]
 
 	actualUser, err := suite.repo.RemoveUserByUserID(expectedUser.ID)
@@ -157,7 +171,7 @@ func (suite *repoIntegrationSuite) TestRemoveUserByUserIDExpectUserRemoved() {
 }
 
 func (suite *repoIntegrationSuite) TestRemoveUserByIDExpectNotFoundErrReturn() {
-	notExistsTodoID := emptyUser.ID
+	notExistsTodoID := user.EmptyUser.ID
 	expectedError := common.ErrEntityNotFound
 
 	_, actualError := suite.repo.RemoveUserByUserID(notExistsTodoID)
@@ -165,7 +179,7 @@ func (suite *repoIntegrationSuite) TestRemoveUserByIDExpectNotFoundErrReturn() {
 	assert.Equal(suite.T(), expectedError, actualError)
 }
 
-func assertUserEqual(t *testing.T, expect User, actual User) {
+func assertUserEqual(t *testing.T, expect user.User, actual user.User) {
 	assert.Equal(t, expect.ID, actual.ID)
 	assert.Equal(t, expect.UserName, actual.UserName)
 	assert.Equal(t, expect.CreatedAt, actual.CreatedAt)
