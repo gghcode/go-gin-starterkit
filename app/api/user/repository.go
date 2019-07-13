@@ -28,7 +28,9 @@ type repository struct {
 
 // NewRepository return new instance.
 func NewRepository(dbConn *db.Conn) Repository {
-	dbConn.GetDB().AutoMigrate(User{})
+	if dbConn != nil {
+		dbConn.GetDB().AutoMigrate(User{})
+	}
 
 	return &repository{
 		dbConn: dbConn,
