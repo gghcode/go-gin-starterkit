@@ -5,18 +5,21 @@ import (
 	"strconv"
 
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/services"
 	"github.com/gin-gonic/gin"
 )
 
 // Controller is user controller
 type Controller struct {
-	repo Repository
+	repo     Repository
+	passport services.Passport
 }
 
 // NewController return new user controller instance.
-func NewController(repo Repository) *Controller {
+func NewController(repo Repository, passport services.Passport) *Controller {
 	return &Controller{
-		repo: repo,
+		repo:     repo,
+		passport: passport,
 	}
 }
 
@@ -44,9 +47,15 @@ func (controller *Controller) createUser(ctx *gin.Context) {
 		return
 	}
 
+	passwordHash, err := controller.passport.HashPassword(dtoReq.Password)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, common.NewErrResp(err))
+		return
+	}
+
 	userEntity := User{
 		UserName:     dtoReq.UserName,
-		PasswordHash: []byte(dtoReq.Password),
+		PasswordHash: passwordHash,
 	}
 
 	createdUser, err := controller.repo.CreateUser(userEntity)
