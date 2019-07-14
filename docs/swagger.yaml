@@ -1,5 +1,28 @@
 basePath: '{{.BasePath}}'
 definitions:
+  auth.CreateAccessTokenRequest:
+    properties:
+      password:
+        example: <password>
+        type: string
+      user_name:
+        example: <user name>
+        type: string
+    required:
+    - password
+    - user_name
+    type: object
+  auth.TokenResponse:
+    properties:
+      access_token:
+        type: string
+      expires_in:
+        type: integer
+      refresh_token:
+        type: string
+      type:
+        type: string
+    type: object
   common.APIError:
     properties:
       message:
@@ -82,6 +105,39 @@ paths:
         "200": {}
       tags:
       - App API
+  /api/oauth2/token:
+    post:
+      consumes:
+      - application/json
+      description: Get new access token
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/auth.CreateAccessTokenRequest'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/auth.TokenResponse'
+            type: object
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+        "401":
+          description: Invalid credential
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+      tags:
+      - Auth API
   /api/todos:
     get:
       consumes:
@@ -320,4 +376,9 @@ paths:
             type: object
       tags:
       - User API
+securityDefinitions:
+  "":
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

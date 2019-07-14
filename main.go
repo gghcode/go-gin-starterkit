@@ -13,7 +13,9 @@ const (
 // @version 1.0
 // @description This is a sample gin starter server.
 // @termsOfService http://swagger.io/terms/
-
+// @securitydefinitions.apikey
+// @in header
+// @name Authorization
 // @contact.name API Support
 // @contact.email gyuhwan.a.kim@gmail.com
 

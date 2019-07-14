@@ -1,12 +1,14 @@
 package app
 
 import (
+	"github.com/gghcode/go-gin-starterkit/app/api/auth"
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
 	"github.com/gghcode/go-gin-starterkit/app/api/todo"
 	"github.com/gghcode/go-gin-starterkit/app/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
 	_ "github.com/gghcode/go-gin-starterkit/docs"
+	"github.com/gghcode/go-gin-starterkit/services"
 	"github.com/gin-gonic/gin"
 
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -44,9 +46,12 @@ func (server *Server) Run() error {
 
 	attachSwaggerUI(server.core)
 
+	passport := services.NewPassport()
+
 	registerControllerPrefix(server.core, "api", common.NewController())
 	registerControllerPrefix(server.core, "api/todos", todo.NewController(todo.NewRepository(dbConn)))
-	registerControllerPrefix(server.core, "api/users", user.NewController(user.NewRepository(dbConn)))
+	registerControllerPrefix(server.core, "api/users", user.NewController(user.NewRepository(dbConn), passport))
+	registerControllerPrefix(server.core, "api/oauth2", auth.NewController(server.conf, user.NewRepository(dbConn), passport))
 
 	addr := server.conf.Addr
 	return server.core.Run(addr)

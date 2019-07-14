@@ -17,6 +17,9 @@ var (
 
 	// ErrInvalidUUID was occurred when uuid format was invalid.
 	ErrInvalidUUID = errors.New("UUID was invalid")
+
+	// ErrInvalidRequestPayload is occurred when payload is invalid.
+	ErrInvalidRequestPayload = errors.New("Request payload is invalid")
 )
 
 // ErrorResponse is app response.
