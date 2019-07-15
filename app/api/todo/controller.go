@@ -4,6 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/middleware"
 	"github.com/gin-gonic/gin"
 )
 
@@ -21,11 +22,15 @@ func NewController(repo Repository) *Controller {
 
 // RegisterRoutes register handler routes.
 func (controller Controller) RegisterRoutes(router gin.IRouter) {
-	router.Handle("POST", "/", controller.createTodo)
 	router.Handle("GET", "/", controller.getAllTodos)
-	router.Handle("GET", "/:id", controller.getTodoByTodoID)
-	router.Handle("PUT", "/:id", controller.updateTodoByTodoID)
-	router.Handle("DELETE", "/:id", controller.removeTodoByTodoID)
+	router.Handle("POST", "/", controller.createTodo)
+
+	authorized := router.Use(middleware.AuthRequired())
+	{
+		authorized.Handle("GET", "/:id", controller.getTodoByTodoID)
+		authorized.Handle("PUT", "/:id", controller.updateTodoByTodoID)
+		authorized.Handle("DELETE", "/:id", controller.removeTodoByTodoID)
+	}
 }
 
 // @Description Create new todo
@@ -75,6 +80,7 @@ func (controller *Controller) getAllTodos(ctx *gin.Context) {
 }
 
 // @Description Get todo by todo id
+// @Security ApiKeyAuth
 // @Produce json
 // @Param id path string true "Todo ID"
 // @Success 200 {object} todo.TodoResponse "ok"
@@ -97,6 +103,7 @@ func (controller *Controller) getTodoByTodoID(ctx *gin.Context) {
 }
 
 // @Description Update todo by todo id
+// @Security ApiKeyAuth
 // @Produce json
 // @Param id path string true "Todo ID"
 // @Param payload body todo.CreateTodoRequest true "todo payload"
@@ -132,6 +139,7 @@ func (controller *Controller) updateTodoByTodoID(ctx *gin.Context) {
 }
 
 // @Description Remove todo by todo id
+// @Security ApiKeyAuth
 // @Produce json
 // @Param id path string true "Todo ID"
 // @Success 200 {object} todo.TodoResponse "ok"

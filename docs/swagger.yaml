@@ -203,6 +203,8 @@ paths:
           schema:
             $ref: '#/definitions/common.ErrorResponse'
             type: object
+      security:
+      - ApiKeyAuth: []
       tags:
       - Todo API
     get:
@@ -226,6 +228,8 @@ paths:
           schema:
             $ref: '#/definitions/common.ErrorResponse'
             type: object
+      security:
+      - ApiKeyAuth: []
       tags:
       - Todo API
     put:
@@ -261,6 +265,8 @@ paths:
           schema:
             $ref: '#/definitions/common.ErrorResponse'
             type: object
+      security:
+      - ApiKeyAuth: []
       tags:
       - Todo API
   /api/users:
@@ -313,6 +319,8 @@ paths:
           schema:
             $ref: '#/definitions/common.ErrorResponse'
             type: object
+      security:
+      - ApiKeyAuth: []
       tags:
       - User API
     put:
@@ -350,6 +358,8 @@ paths:
           schema:
             $ref: '#/definitions/common.ErrorResponse'
             type: object
+      security:
+      - ApiKeyAuth: []
       tags:
       - User API
   /api/users/{username}:
@@ -374,10 +384,12 @@ paths:
           schema:
             $ref: '#/definitions/common.ErrorResponse'
             type: object
+      security:
+      - ApiKeyAuth: []
       tags:
       - User API
 securityDefinitions:
-  "":
+  ApiKeyAuth:
     in: header
     name: Authorization
     type: apiKey
