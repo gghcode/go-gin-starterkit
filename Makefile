@@ -36,3 +36,7 @@ docker_up: docker_down
 
 docker_down:
 	@docker-compose -p integration -f docker-compose.integration.yml down -v
+
+
+up-db:
+	@docker run --name test-db -d -p 5432:5432 postgres:11.3-alpine

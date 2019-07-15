@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/middleware"
 	"github.com/gghcode/go-gin-starterkit/services"
 	"github.com/gin-gonic/gin"
 )
@@ -26,9 +27,13 @@ func NewController(repo Repository, passport services.Passport) *Controller {
 // RegisterRoutes register handler routes.
 func (controller *Controller) RegisterRoutes(router gin.IRouter) {
 	router.Handle("POST", "/", controller.createUser)
-	router.Handle("GET", "/:username", controller.getUserByUserName)
-	router.Handle("PUT", "/:id", controller.updateUserByID)
-	router.Handle("DELETE", "/:id", controller.removeUserByID)
+
+	authorized := router.Use(middleware.AuthRequired())
+	{
+		authorized.Handle("GET", "/:username", controller.getUserByUserName)
+		authorized.Handle("PUT", "/:id", controller.updateUserByID)
+		authorized.Handle("DELETE", "/:id", controller.removeUserByID)
+	}
 }
 
 // @Description Create new user
@@ -71,6 +76,7 @@ func (controller *Controller) createUser(ctx *gin.Context) {
 }
 
 // @Description Get user by username
+// @Security ApiKeyAuth
 // @Produce json
 // @Param username path string true "User Name"
 // @Success 200 {object} user.UserResponse "ok"
@@ -93,6 +99,7 @@ func (controller *Controller) getUserByUserName(ctx *gin.Context) {
 }
 
 // @Description Update new user by user id
+// @Security ApiKeyAuth
 // @Accept json
 // @Produce json
 // @Param id path string true "user id"
@@ -132,6 +139,7 @@ func (controller *Controller) updateUserByID(ctx *gin.Context) {
 }
 
 // @Description Remove user by user id
+// @Security ApiKeyAuth
 // @Produce json
 // @Param id path string true "user id"
 // @Success 200 {object} user.UserResponse "ok"

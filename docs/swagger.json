@@ -144,6 +144,11 @@
         },
         "/api/todos/{id}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get todo by todo id",
                 "produces": [
                     "application/json"
@@ -178,6 +183,11 @@
                 }
             },
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update todo by todo id",
                 "produces": [
                     "application/json"
@@ -229,6 +239,11 @@
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Remove todo by todo id",
                 "produces": [
                     "application/json"
@@ -307,6 +322,11 @@
         },
         "/api/users/{id}": {
             "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Update new user by user id",
                 "consumes": [
                     "application/json"
@@ -361,6 +381,11 @@
                 }
             },
             "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Remove user by user id",
                 "produces": [
                     "application/json"
@@ -397,6 +422,11 @@
         },
         "/api/users/{username}": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Get user by username",
                 "produces": [
                     "application/json"
@@ -562,7 +592,7 @@
         }
     },
     "securityDefinitions": {
-        "": {
+        "ApiKeyAuth": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header"

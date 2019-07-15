@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/middleware"
 
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
@@ -48,6 +49,13 @@ func (suite *controllerIntegrationTestSuite) SetupSuite() {
 	require.NoError(suite.T(), err)
 
 	suite.ginEngine = gin.New()
+	suite.ginEngine.Use(func(ctx *gin.Context) {
+		var innerHandler gin.HandlerFunc = func(ctx *gin.Context) {}
+
+		ctx.Set(middleware.VerifyHandlerKey, innerHandler)
+		ctx.Next()
+	})
+
 	suite.dbConn = dbConn
 
 	todoRepo := NewRepository(dbConn)
