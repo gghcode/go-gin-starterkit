@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/gghcode/go-gin-starterkit/middleware"
-	"github.com/gghcode/go-gin-starterkit/services"
+	"github.com/gghcode/go-gin-starterkit/service"
 
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
 	"github.com/gghcode/go-gin-starterkit/app/api/testutil"
@@ -56,7 +56,7 @@ func (suite *controllerIntegration) SetupSuite() {
 	suite.dbConn = dbConn
 
 	userRepo := user.NewRepository(dbConn)
-	userController := user.NewController(userRepo, services.NewPassport())
+	userController := user.NewController(userRepo, service.NewPassport())
 	userController.RegisterRoutes(suite.ginEngine)
 
 	suite.testUsers, err = pushTestDataToDB(userRepo, "controller")

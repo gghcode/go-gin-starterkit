@@ -6,18 +6,18 @@ import (
 
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
 	"github.com/gghcode/go-gin-starterkit/middleware"
-	"github.com/gghcode/go-gin-starterkit/services"
+	"github.com/gghcode/go-gin-starterkit/service"
 	"github.com/gin-gonic/gin"
 )
 
 // Controller is user controller
 type Controller struct {
 	repo     Repository
-	passport services.Passport
+	passport service.Passport
 }
 
 // NewController return new user controller instance.
-func NewController(repo Repository, passport services.Passport) *Controller {
+func NewController(repo Repository, passport service.Passport) *Controller {
 	return &Controller{
 		repo:     repo,
 		passport: passport,

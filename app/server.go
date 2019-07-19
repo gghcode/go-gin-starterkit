@@ -9,7 +9,7 @@ import (
 	"github.com/gghcode/go-gin-starterkit/db"
 	_ "github.com/gghcode/go-gin-starterkit/docs"
 	"github.com/gghcode/go-gin-starterkit/middleware"
-	"github.com/gghcode/go-gin-starterkit/services"
+	"github.com/gghcode/go-gin-starterkit/service"
 	"github.com/gin-gonic/gin"
 
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -47,7 +47,7 @@ func (server *Server) Run() error {
 
 	attachSwaggerUI(server.core)
 
-	passport := services.NewPassport()
+	passport := service.NewPassport()
 	userRepo := user.NewRepository(dbConn)
 
 	server.core.Use(middleware.AddAuthHandler(server.conf.Jwt))

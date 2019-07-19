@@ -1,20 +1,20 @@
-package services_test
+package service_test
 
 import (
 	"testing"
 
-	"github.com/gghcode/go-gin-starterkit/services"
+	"github.com/gghcode/go-gin-starterkit/service"
 	"github.com/stretchr/testify/suite"
 )
 
 type passportUnit struct {
 	suite.Suite
 
-	passport services.Passport
+	passport service.Passport
 }
 
 func (suite *passportUnit) SetupTest() {
-	suite.passport = services.NewPassport()
+	suite.passport = service.NewPassport()
 }
 
 func TestPassportUnit(t *testing.T) {
