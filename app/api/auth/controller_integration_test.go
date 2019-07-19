@@ -9,7 +9,7 @@ import (
 	"github.com/gghcode/go-gin-starterkit/app/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
-	"github.com/gghcode/go-gin-starterkit/services"
+	"github.com/gghcode/go-gin-starterkit/service"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -46,7 +46,7 @@ func (suite *controllerIntegration) SetupSuite() {
 	suite.dbConn = dbConn
 
 	userRepo := user.NewRepository(dbConn)
-	passport := services.NewPassport()
+	passport := service.NewPassport()
 
 	authController := auth.NewController(conf, userRepo, passport)
 	authController.RegisterRoutes(suite.ginEngine)
