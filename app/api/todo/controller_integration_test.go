@@ -1,15 +1,13 @@
 package todo
 
 import (
-	"bytes"
 	"encoding/json"
 	"io"
-	"io/ioutil"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/app/api/testutil"
 	"github.com/gghcode/go-gin-starterkit/middleware"
 
 	"github.com/gghcode/go-gin-starterkit/config"
@@ -73,10 +71,10 @@ func (suite *controllerIntegrationTestSuite) TearDownSuite() {
 func (suite *controllerIntegrationTestSuite) TestGetAllTodosExpectTodosFetched() {
 	expectedStatus := http.StatusOK
 
-	actualRes := actualResponse(suite, "GET", "/", nil)
-	actualJSON := jsonStringFromResBody(suite.T(), actualRes.Body)
-
+	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "GET", "/", nil)
 	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
+
+	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 	assert.NotNil(suite.T(), actualJSON)
 }
 
@@ -84,12 +82,12 @@ func (suite *controllerIntegrationTestSuite) TestGetTodoByIDExpectTodoFetched() 
 	willFetchTodoRes := suite.testTodos[WillFetchedTodoIdx].TodoResponse()
 
 	expectedStatus := http.StatusOK
-	expectedJSON := jsonStringFromInterface(suite.T(), willFetchTodoRes)
+	expectedJSON := testutil.JSONStringFromInterface(suite.T(), willFetchTodoRes)
 
-	actualRes := actualResponse(suite, "GET", "/"+willFetchTodoRes.ID.String(), nil)
-	actualJSON := jsonStringFromResBody(suite.T(), actualRes.Body)
-
+	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "GET", "/"+willFetchTodoRes.ID.String(), nil)
 	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
+
+	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 	assert.Equal(suite.T(), expectedJSON, actualJSON)
 }
 
@@ -98,10 +96,10 @@ func (suite *controllerIntegrationTestSuite) TestGetTodoByIDExpectNotFoundReturn
 
 	expectedStatus := http.StatusNotFound
 	expectedErrRes := common.NewErrResp(common.ErrEntityNotFound)
-	expectedJSON := jsonStringFromInterface(suite.T(), expectedErrRes)
+	expectedJSON := testutil.JSONStringFromInterface(suite.T(), expectedErrRes)
 
-	actualRes := actualResponse(suite, "GET", "/"+notExistsTodoID.String(), nil)
-	actualJSON := jsonStringFromResBody(suite.T(), actualRes.Body)
+	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "GET", "/"+notExistsTodoID.String(), nil)
+	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 
 	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
 	assert.Equal(suite.T(), expectedJSON, actualJSON)
@@ -119,15 +117,15 @@ func (suite *controllerIntegrationTestSuite) TestCreateTodoExpectTodoCreated() {
 		Contents: createTodoReq.Contents,
 	}
 
-	reqBody := reqBodyFromInterface(suite.T(), createTodoReq)
+	reqBody := testutil.ReqBodyFromInterface(suite.T(), createTodoReq)
 
-	actualRes := actualResponse(suite, "POST", "/", reqBody)
+	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "POST", "/", reqBody)
 	actualTodoRes := todoResFromResBody(suite.T(), actualRes.Body)
-	actualJSON := jsonStringFromInterface(suite.T(), actualTodoRes)
+	actualJSON := testutil.JSONStringFromInterface(suite.T(), actualTodoRes)
 
 	expectedTodoRes.ID = actualTodoRes.ID
 	expectedTodoRes.CreatedAt = actualTodoRes.CreatedAt
-	expectedJSON := jsonStringFromInterface(suite.T(), expectedTodoRes)
+	expectedJSON := testutil.JSONStringFromInterface(suite.T(), expectedTodoRes)
 
 	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
 	assert.Equal(suite.T(), expectedJSON, actualJSON)
@@ -141,10 +139,10 @@ func (suite *controllerIntegrationTestSuite) TestCreateTodoExpectBadRequestRetur
 
 	expectedStatus := http.StatusBadRequest
 
-	reqBody := reqBodyFromInterface(suite.T(), invalidCreateTodoReq)
+	reqBody := testutil.ReqBodyFromInterface(suite.T(), invalidCreateTodoReq)
 
-	actualRes := actualResponse(suite, "POST", "/", reqBody)
-	actualJSON := jsonStringFromResBody(suite.T(), actualRes.Body)
+	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "POST", "/", reqBody)
+	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 
 	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
 	assert.NotNil(suite.T(), actualJSON)
@@ -161,12 +159,12 @@ func (suite *controllerIntegrationTestSuite) TestUpdateTodoByIDExpectTodoUpdated
 	willUpdateTodoRes.Contents = createTodoReq.Contents
 
 	expectedStatus := http.StatusOK
-	expectedJSON := jsonStringFromInterface(suite.T(), willUpdateTodoRes)
+	expectedJSON := testutil.JSONStringFromInterface(suite.T(), willUpdateTodoRes)
 
-	reqBody := reqBodyFromInterface(suite.T(), createTodoReq)
+	reqBody := testutil.ReqBodyFromInterface(suite.T(), createTodoReq)
 
-	actualRes := actualResponse(suite, "PUT", "/"+willUpdateTodoRes.ID.String(), reqBody)
-	actualJSON := jsonStringFromResBody(suite.T(), actualRes.Body)
+	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "PUT", "/"+willUpdateTodoRes.ID.String(), reqBody)
+	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 
 	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
 	assert.Equal(suite.T(), expectedJSON, actualJSON)
@@ -181,12 +179,12 @@ func (suite *controllerIntegrationTestSuite) TestUpdateTodoByIDExpectNotFoundRet
 
 	expectedStatus := http.StatusNotFound
 	expectedErrRes := common.NewErrResp(common.ErrEntityNotFound)
-	expectedJSON := jsonStringFromInterface(suite.T(), expectedErrRes)
+	expectedJSON := testutil.JSONStringFromInterface(suite.T(), expectedErrRes)
 
-	reqBody := reqBodyFromInterface(suite.T(), createTodoReq)
+	reqBody := testutil.ReqBodyFromInterface(suite.T(), createTodoReq)
 
-	actualRes := actualResponse(suite, "PUT", "/"+notExistsTodoID.String(), reqBody)
-	actualJSON := jsonStringFromResBody(suite.T(), actualRes.Body)
+	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "PUT", "/"+notExistsTodoID.String(), reqBody)
+	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 
 	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
 	assert.Equal(suite.T(), expectedJSON, actualJSON)
@@ -196,10 +194,10 @@ func (suite *controllerIntegrationTestSuite) TestRemoveTodoByIDExpectTodoRemoved
 	willRemoveTodoRes := suite.testTodos[WillRemovedTodoIdx].TodoResponse()
 
 	expectedStatus := http.StatusOK
-	expectedJSON := jsonStringFromInterface(suite.T(), willRemoveTodoRes)
+	expectedJSON := testutil.JSONStringFromInterface(suite.T(), willRemoveTodoRes)
 
-	actualRes := actualResponse(suite, "DELETE", "/"+willRemoveTodoRes.ID.String(), nil)
-	actualJSON := jsonStringFromResBody(suite.T(), actualRes.Body)
+	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "DELETE", "/"+willRemoveTodoRes.ID.String(), nil)
+	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 
 	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
 	assert.Equal(suite.T(), expectedJSON, actualJSON)
@@ -210,46 +208,13 @@ func (suite *controllerIntegrationTestSuite) TestRemoveTodoByIDExpectNotFoundRet
 
 	expectedStatus := http.StatusNotFound
 	expectedErrRes := common.NewErrResp(common.ErrEntityNotFound)
-	expectedJSON := jsonStringFromInterface(suite.T(), expectedErrRes)
+	expectedJSON := testutil.JSONStringFromInterface(suite.T(), expectedErrRes)
 
-	actualRes := actualResponse(suite, "DELETE", "/"+notExistsTodoID.String(), nil)
-	actualJSON := jsonStringFromResBody(suite.T(), actualRes.Body)
+	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "DELETE", "/"+notExistsTodoID.String(), nil)
+	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 
 	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
 	assert.Equal(suite.T(), expectedJSON, actualJSON)
-}
-
-func actualResponse(suite *controllerIntegrationTestSuite,
-	method, url string, body io.Reader) *http.Response {
-	httpRecorder := httptest.NewRecorder()
-
-	req, err := http.NewRequest(method, url, body)
-	require.NoError(suite.T(), err)
-
-	suite.ginEngine.ServeHTTP(httpRecorder, req)
-
-	return httpRecorder.Result()
-}
-
-func reqBodyFromInterface(t *testing.T, body interface{}) *bytes.Buffer {
-	jsonBytes, err := json.Marshal(body)
-	require.NoError(t, err)
-
-	return bytes.NewBuffer(jsonBytes)
-}
-
-func jsonStringFromInterface(t *testing.T, res interface{}) string {
-	bytes, err := json.Marshal(res)
-	require.NoError(t, err)
-
-	return string(bytes)
-}
-
-func jsonStringFromResBody(t *testing.T, body io.Reader) string {
-	bytes, err := ioutil.ReadAll(body)
-	require.NoError(t, err)
-
-	return string(bytes)
 }
 
 func todoResFromResBody(t *testing.T, body io.Reader) TodoResponse {

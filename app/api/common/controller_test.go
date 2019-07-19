@@ -2,12 +2,11 @@ package common
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
+	"github.com/gghcode/go-gin-starterkit/app/api/testutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -33,19 +32,7 @@ func (suite *controllerUnitTestSuite) SetupTest() {
 func (suite *controllerUnitTestSuite) TestHealthyExpectedStatusOK() {
 	expectedStatus := http.StatusOK
 
-	req, err := http.NewRequest("GET", "/healthy", nil)
-	require.NoError(suite.T(), err)
+	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "GET", "/healthy", nil)
 
-	res := getResponse(suite, req)
-	actualStatus := res.StatusCode
-
-	assert.Equal(suite.T(), expectedStatus, actualStatus)
-}
-
-func getResponse(suite *controllerUnitTestSuite, req *http.Request) *http.Response {
-	httpRecorder := httptest.NewRecorder()
-
-	suite.ginEngine.ServeHTTP(httpRecorder, req)
-
-	return httpRecorder.Result()
+	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
 }
