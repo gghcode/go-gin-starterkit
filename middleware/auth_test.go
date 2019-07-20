@@ -8,7 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gghcode/go-gin-starterkit/api/common"
-	"github.com/gghcode/go-gin-starterkit/api/testutil"
+	"github.com/gghcode/go-gin-starterkit/internal/testutil"
 	"github.com/gghcode/go-gin-starterkit/config"
 
 	"github.com/gin-gonic/gin"

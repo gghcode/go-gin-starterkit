@@ -5,10 +5,10 @@ import (
 	"testing"
 
 	"github.com/gghcode/go-gin-starterkit/api/auth"
-	"github.com/gghcode/go-gin-starterkit/api/testutil"
 	"github.com/gghcode/go-gin-starterkit/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
+	"github.com/gghcode/go-gin-starterkit/internal/testutil"
 	"github.com/gghcode/go-gin-starterkit/service"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
