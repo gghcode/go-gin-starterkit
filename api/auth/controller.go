@@ -3,8 +3,8 @@ package auth
 import (
 	"net/http"
 
-	"github.com/gghcode/go-gin-starterkit/app/api/common"
-	"github.com/gghcode/go-gin-starterkit/app/api/user"
+	"github.com/gghcode/go-gin-starterkit/api/common"
+	"github.com/gghcode/go-gin-starterkit/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/service"
 	"github.com/gin-gonic/gin"
@@ -26,7 +26,7 @@ func NewController(conf config.Configuration, userRepo user.Repository, passport
 
 // RegisterRoutes register handler routes.
 func (controller *Controller) RegisterRoutes(router gin.IRouter) {
-	router.Handle("POST", "/token", controller.getToken)
+	router.Handle("POST", "/auth/token", controller.getToken)
 }
 
 // @Description Get new access token
@@ -37,7 +37,7 @@ func (controller *Controller) RegisterRoutes(router gin.IRouter) {
 // @Failure 400 {object} common.ErrorResponse "Invalid payload"
 // @Failure 401 {object} common.ErrorResponse "Invalid credential"
 // @Tags Auth API
-// @Router /api/oauth2/token [post]
+// @Router /auth/token [post]
 func (controller *Controller) getToken(ctx *gin.Context) {
 	var reqPayload CreateAccessTokenRequest
 

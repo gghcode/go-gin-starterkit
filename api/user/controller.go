@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/api/common"
 	"github.com/gghcode/go-gin-starterkit/middleware"
 	"github.com/gghcode/go-gin-starterkit/service"
 	"github.com/gin-gonic/gin"
@@ -26,13 +26,16 @@ func NewController(repo Repository, passport service.Passport) *Controller {
 
 // RegisterRoutes register handler routes.
 func (controller *Controller) RegisterRoutes(router gin.IRouter) {
-	router.Handle("POST", "/", controller.createUser)
-
-	authorized := router.Use(middleware.AuthRequired())
+	userRouter := router.Group("users/")
 	{
-		authorized.Handle("GET", "/:username", controller.getUserByUserName)
-		authorized.Handle("PUT", "/:id", controller.updateUserByID)
-		authorized.Handle("DELETE", "/:id", controller.removeUserByID)
+		userRouter.Handle("POST", "/", controller.createUser)
+
+		authorized := userRouter.Use(middleware.AuthRequired())
+		{
+			authorized.Handle("GET", "/:username", controller.getUserByUserName)
+			authorized.Handle("PUT", "/:id", controller.updateUserByID)
+			authorized.Handle("DELETE", "/:id", controller.removeUserByID)
+		}
 	}
 }
 
@@ -43,7 +46,7 @@ func (controller *Controller) RegisterRoutes(router gin.IRouter) {
 // @Success 201 {object} user.UserResponse "ok"
 // @Failure 400 {object} common.ErrorResponse "Invalid user payload"
 // @Tags User API
-// @Router /api/users [post]
+// @Router /users [post]
 func (controller *Controller) createUser(ctx *gin.Context) {
 	var dtoReq CreateUserRequest
 
@@ -82,7 +85,7 @@ func (controller *Controller) createUser(ctx *gin.Context) {
 // @Success 200 {object} user.UserResponse "ok"
 // @Failure 404 {object} common.ErrorResponse "Not found entity"
 // @Tags User API
-// @Router /api/users/{username} [get]
+// @Router /users/{username} [get]
 func (controller *Controller) getUserByUserName(ctx *gin.Context) {
 	userName := ctx.Param("username")
 
@@ -108,7 +111,7 @@ func (controller *Controller) getUserByUserName(ctx *gin.Context) {
 // @Failure 400 {object} common.ErrorResponse "Invalid user payload"
 // @Failure 404 {object} common.ErrorResponse "Not found entity"
 // @Tags User API
-// @Router /api/users/{id} [put]
+// @Router /users/{id} [put]
 func (controller *Controller) updateUserByID(ctx *gin.Context) {
 	userID, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {
@@ -145,7 +148,7 @@ func (controller *Controller) updateUserByID(ctx *gin.Context) {
 // @Success 200 {object} user.UserResponse "ok"
 // @Failure 404 {object} common.ErrorResponse "Not found entity"
 // @Tags User API
-// @Router /api/users/{id} [delete]
+// @Router /users/{id} [delete]
 func (controller *Controller) removeUserByID(ctx *gin.Context) {
 	userID, err := strconv.ParseInt(ctx.Param("id"), 10, 64)
 	if err != nil {

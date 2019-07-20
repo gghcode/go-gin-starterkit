@@ -9,9 +9,9 @@ import (
 	"github.com/gghcode/go-gin-starterkit/middleware"
 	"github.com/gghcode/go-gin-starterkit/service"
 
-	"github.com/gghcode/go-gin-starterkit/app/api/common"
-	"github.com/gghcode/go-gin-starterkit/app/api/testutil"
-	"github.com/gghcode/go-gin-starterkit/app/api/user"
+	"github.com/gghcode/go-gin-starterkit/api/common"
+	"github.com/gghcode/go-gin-starterkit/api/testutil"
+	"github.com/gghcode/go-gin-starterkit/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/gin-gonic/gin"
@@ -107,7 +107,7 @@ func (suite *controllerIntegration) TestCreateUser() {
 			reqBody := testutil.ReqBodyFromInterface(suite.T(), tc.createUserReq)
 
 			actualRes := testutil.ActualResponse(suite.T(),
-				suite.ginEngine, "POST", "/", reqBody)
+				suite.ginEngine, "POST", "/users/", reqBody)
 			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
 			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
@@ -142,7 +142,7 @@ func (suite *controllerIntegration) TestGetUserByName() {
 	for _, tc := range testCases {
 		suite.Run(tc.description, func() {
 			actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine,
-				"GET", "/"+tc.username, nil)
+				"GET", "/users/"+tc.username, nil)
 			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
 			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
@@ -207,7 +207,7 @@ func (suite *controllerIntegration) TestUpdateUserByID() {
 			reqBody := testutil.ReqBodyFromInterface(suite.T(), tc.updateUserReq)
 
 			actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine,
-				"PUT", "/"+tc.userID, reqBody)
+				"PUT", "/users/"+tc.userID, reqBody)
 			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
 			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
@@ -251,7 +251,7 @@ func (suite *controllerIntegration) TestRemoveUser() {
 	for _, tc := range testCases {
 		suite.Run(tc.description, func() {
 			actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine,
-				"DELETE", "/"+tc.userID, nil)
+				"DELETE", "/users/"+tc.userID, nil)
 			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
 			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)

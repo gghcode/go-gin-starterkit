@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gghcode/go-gin-starterkit/app/api/testutil"
+	"github.com/gghcode/go-gin-starterkit/api/testutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"

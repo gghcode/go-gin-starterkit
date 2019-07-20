@@ -3,7 +3,7 @@ package todo
 import (
 	"testing"
 
-	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/api/common"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/jinzhu/gorm"

@@ -3,7 +3,7 @@ package user
 import (
 	"time"
 
-	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/api/common"
 	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/jinzhu/gorm"
 	pg "github.com/lib/pq"
