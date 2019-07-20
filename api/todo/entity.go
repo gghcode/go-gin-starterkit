@@ -6,6 +6,9 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
+// EmptyTodo is empty todo model
+var EmptyTodo = Todo{}
+
 // Todo is todo data model.
 type Todo struct {
 	ID        uuid.UUID `gorm:"type:uuid;primary_key;"`

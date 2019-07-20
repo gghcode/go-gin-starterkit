@@ -99,7 +99,7 @@ func (suite *serviceUnit) TestVerifyAuthentication() {
 		expectedErr       error
 	}{
 		{
-			description:       "ShouldBeSuccess",
+			description:       "ShouldReturnSuccess",
 			inputUserName:     "username",
 			inputPassword:     "password",
 			stubUser:          user.User{ID: 10},
@@ -109,7 +109,7 @@ func (suite *serviceUnit) TestVerifyAuthentication() {
 			expectedErr:       nil,
 		},
 		{
-			description:   "ShouldBeNotFound",
+			description:   "ShouldReturnNotFoundErr",
 			inputUserName: "NOT_EXISTS_USER",
 			inputPassword: "password",
 			stubUser:      user.EmptyUser,
@@ -118,7 +118,7 @@ func (suite *serviceUnit) TestVerifyAuthentication() {
 			expectedErr:   common.ErrEntityNotFound,
 		},
 		{
-			description:       "ShouldBeInvalidPassword",
+			description:       "ShouldReturnInvalidPasswordErr",
 			inputUserName:     "username",
 			inputPassword:     "invalidPassword",
 			stubUser:          user.User{ID: 10},

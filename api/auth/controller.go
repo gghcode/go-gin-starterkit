@@ -10,6 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// APIPath is path prefix
+const APIPath = "/auth/"
+
 // Controller is auth controller
 type Controller struct {
 	conf    config.JwtConfig
@@ -26,7 +29,7 @@ func NewController(conf config.Configuration, userRepo user.Repository, passport
 
 // RegisterRoutes register handler routes.
 func (controller *Controller) RegisterRoutes(router gin.IRouter) {
-	router.Handle("POST", "/auth/token", controller.getToken)
+	router.Handle("POST", APIPath+"/token", controller.getToken)
 }
 
 // @Description Get new access token

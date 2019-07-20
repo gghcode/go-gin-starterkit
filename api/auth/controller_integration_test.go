@@ -67,7 +67,7 @@ func (suite *controllerIntegration) TestGetToken() {
 		expectedStatus int
 	}{
 		{
-			description: "ShouldBeTokenGenerated",
+			description: "ShouldGenerateToken",
 			reqPayload: &auth.CreateAccessTokenRequest{
 				UserName: suite.testUser.UserName,
 				Password: "password",
@@ -75,12 +75,12 @@ func (suite *controllerIntegration) TestGetToken() {
 			expectedStatus: http.StatusOK,
 		},
 		{
-			description:    "ShouldBeBadReqest",
+			description:    "ShouldReturnBadReqestErr",
 			reqPayload:     nil,
 			expectedStatus: http.StatusBadRequest,
 		},
 		{
-			description: "ShouldBeUnauthorized",
+			description: "ShouldReturnUnauthorizedErr",
 			reqPayload: &auth.CreateAccessTokenRequest{
 				UserName: "NOT_EXISTS_USER_NAME",
 				Password: "password",
@@ -88,7 +88,7 @@ func (suite *controllerIntegration) TestGetToken() {
 			expectedStatus: http.StatusUnauthorized,
 		},
 		{
-			description: "ShouldBeUnauthorized_WhenIncorrectPassword",
+			description: "ShouldReturnUnauthorizedErr_WhenIncorrectPassword",
 			reqPayload: &auth.CreateAccessTokenRequest{
 				UserName: suite.testUser.UserName,
 				Password: "INCORRECT_PASSWORD",
@@ -105,7 +105,7 @@ func (suite *controllerIntegration) TestGetToken() {
 				suite.T(),
 				suite.ginEngine,
 				"POST",
-				"/auth/token",
+				auth.APIPath+"token",
 				reqBody,
 			)
 

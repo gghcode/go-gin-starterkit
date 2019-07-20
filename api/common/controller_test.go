@@ -6,11 +6,10 @@ import (
 
 	"github.com/gghcode/go-gin-starterkit/internal/testutil"
 	"github.com/gin-gonic/gin"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
 
-type controllerUnitTestSuite struct {
+type controllerUnit struct {
 	suite.Suite
 
 	ginEngine  *gin.Engine
@@ -18,10 +17,10 @@ type controllerUnitTestSuite struct {
 }
 
 func TestCommonControllerUnit(t *testing.T) {
-	suite.Run(t, new(controllerUnitTestSuite))
+	suite.Run(t, new(controllerUnit))
 }
 
-func (suite *controllerUnitTestSuite) SetupTest() {
+func (suite *controllerUnit) SetupTest() {
 	gin.SetMode(gin.TestMode)
 
 	suite.ginEngine = gin.New()
@@ -29,10 +28,28 @@ func (suite *controllerUnitTestSuite) SetupTest() {
 	suite.controller.RegisterRoutes(suite.ginEngine)
 }
 
-func (suite *controllerUnitTestSuite) TestHealthyExpectedStatusOK() {
-	expectedStatus := http.StatusOK
+func (suite *controllerUnit) TestHealthy() {
+	testCases := []struct {
+		description    string
+		expectedStatus int
+	}{
+		{
+			description:    "ShouldReturnOK",
+			expectedStatus: http.StatusOK,
+		},
+	}
 
-	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "GET", "/healthy", nil)
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualRes := testutil.ActualResponse(
+				suite.T(),
+				suite.ginEngine,
+				"GET",
+				"/healthy",
+				nil,
+			)
 
-	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
+			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
+		})
+	}
 }

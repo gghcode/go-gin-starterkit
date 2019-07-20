@@ -1,31 +1,32 @@
-package todo
+package todo_test
 
 import (
 	"encoding/json"
+
 	"io"
 	"net/http"
 	"testing"
 
 	"github.com/gghcode/go-gin-starterkit/api/common"
+	"github.com/gghcode/go-gin-starterkit/api/todo"
+	"github.com/gghcode/go-gin-starterkit/config"
+	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/gghcode/go-gin-starterkit/internal/testutil"
 	"github.com/gghcode/go-gin-starterkit/middleware"
 
-	"github.com/gghcode/go-gin-starterkit/config"
-	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/gin-gonic/gin"
 	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
-type controllerIntegrationTestSuite struct {
+type controllerIntegration struct {
 	suite.Suite
 
 	ginEngine *gin.Engine
 	dbConn    *db.Conn
 
-	testTodos []Todo
+	testTodos []todo.Todo
 }
 
 func TestTodoControllerIntegration(t *testing.T) {
@@ -33,10 +34,10 @@ func TestTodoControllerIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	suite.Run(t, new(controllerIntegrationTestSuite))
+	suite.Run(t, new(controllerIntegration))
 }
 
-func (suite *controllerIntegrationTestSuite) SetupSuite() {
+func (suite *controllerIntegration) SetupSuite() {
 	gin.SetMode(gin.TestMode)
 
 	conf, err := config.NewBuilder().
@@ -56,171 +57,247 @@ func (suite *controllerIntegrationTestSuite) SetupSuite() {
 
 	suite.dbConn = dbConn
 
-	todoRepo := NewRepository(dbConn)
-	todoController := NewController(todoRepo)
+	todoRepo := todo.NewRepository(dbConn)
+	todoController := todo.NewController(todoRepo)
 	todoController.RegisterRoutes(suite.ginEngine)
 
 	suite.testTodos, err = pushTestDataToDB(todoRepo)
 	require.NoError(suite.T(), err)
 }
 
-func (suite *controllerIntegrationTestSuite) TearDownSuite() {
+func (suite *controllerIntegration) TearDownSuite() {
 	suite.dbConn.Close()
 }
 
-func (suite *controllerIntegrationTestSuite) TestGetAllTodosExpectTodosFetched() {
-	expectedStatus := http.StatusOK
-
-	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "GET", "/todos/", nil)
-	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
-
-	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
-	assert.NotNil(suite.T(), actualJSON)
-}
-
-func (suite *controllerIntegrationTestSuite) TestGetTodoByIDExpectTodoFetched() {
-	willFetchTodoRes := suite.testTodos[WillFetchedTodoIdx].TodoResponse()
-
-	expectedStatus := http.StatusOK
-	expectedJSON := testutil.JSONStringFromInterface(suite.T(), willFetchTodoRes)
-
-	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "GET", "/todos/"+willFetchTodoRes.ID.String(), nil)
-	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
-
-	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
-	assert.Equal(suite.T(), expectedJSON, actualJSON)
-}
-
-func (suite *controllerIntegrationTestSuite) TestGetTodoByIDExpectNotFoundReturn() {
-	notExistsTodoID := uuid.Nil
-
-	expectedStatus := http.StatusNotFound
-	expectedErrRes := common.NewErrResp(common.ErrEntityNotFound)
-	expectedJSON := testutil.JSONStringFromInterface(suite.T(), expectedErrRes)
-
-	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "GET", "/todos/"+notExistsTodoID.String(), nil)
-	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
-
-	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
-	assert.Equal(suite.T(), expectedJSON, actualJSON)
-}
-
-func (suite *controllerIntegrationTestSuite) TestCreateTodoExpectTodoCreated() {
-	createTodoReq := CreateTodoRequest{
-		Title:    "new title",
-		Contents: "new contents",
+func (suite *controllerIntegration) TestGetAllTodos() {
+	testCases := []struct {
+		description    string
+		expectedStatus int
+	}{
+		{
+			description:    "ShouldFetchTodos",
+			expectedStatus: http.StatusOK,
+		},
 	}
 
-	expectedStatus := http.StatusCreated
-	expectedTodoRes := TodoResponse{
-		Title:    createTodoReq.Title,
-		Contents: createTodoReq.Contents,
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualRes := testutil.ActualResponse(
+				suite.T(),
+				suite.ginEngine,
+				"GET",
+				todo.APIPath,
+				nil)
+
+			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
+
+			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
+
+			suite.NotNil(actualJSON)
+		})
+	}
+}
+
+func (suite *controllerIntegration) TestGetTodoByID() {
+	testCases := []struct {
+		description    string
+		argsTodoID     string
+		expectedStatus int
+		expectedJSON   string
+	}{
+		{
+			description:    "ShouldFetchTodo",
+			argsTodoID:     suite.testTodos[WillFetchedTodoIdx].ID.String(),
+			expectedStatus: http.StatusOK,
+			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
+				suite.testTodos[WillFetchedTodoIdx].TodoResponse()),
+		},
+		{
+			description:    "ShouldReturnNotFoundErr",
+			argsTodoID:     uuid.Nil.String(),
+			expectedStatus: http.StatusNotFound,
+			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
+				common.NewErrResp(common.ErrEntityNotFound)),
+		},
 	}
 
-	reqBody := testutil.ReqBodyFromInterface(suite.T(), createTodoReq)
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualRes := testutil.ActualResponse(
+				suite.T(),
+				suite.ginEngine,
+				"GET",
+				todo.APIPath+tc.argsTodoID,
+				nil)
 
-	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "POST", "/todos/", reqBody)
-	actualTodoRes := todoResFromResBody(suite.T(), actualRes.Body)
-	actualJSON := testutil.JSONStringFromInterface(suite.T(), actualTodoRes)
+			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
-	expectedTodoRes.ID = actualTodoRes.ID
-	expectedTodoRes.CreatedAt = actualTodoRes.CreatedAt
-	expectedJSON := testutil.JSONStringFromInterface(suite.T(), expectedTodoRes)
+			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 
-	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
-	assert.Equal(suite.T(), expectedJSON, actualJSON)
+			suite.Equal(tc.expectedJSON, actualJSON)
+		})
+	}
 }
 
-func (suite *controllerIntegrationTestSuite) TestCreateTodoExpectBadRequestReturn() {
-	invalidCreateTodoReq := CreateTodoRequest{
-		Title:    "",
-		Contents: "new contents",
+func (suite *controllerIntegration) TestCreateTodo() {
+	testCases := []struct {
+		description    string
+		reqBody        io.Reader
+		expectedStatus int
+		expectedJSONFn func(string) string
+	}{
+		{
+			description: "ShouldCreateTodo",
+			reqBody: testutil.ReqBodyFromInterface(suite.T(), todo.CreateTodoRequest{
+				Title:    "new title",
+				Contents: "new contents",
+			}),
+			expectedStatus: http.StatusCreated,
+			expectedJSONFn: func(actualJSON string) string {
+				actualTodoRes := TodoResFromJSONString(suite.T(), actualJSON)
+				expectedTodoRes := todo.TodoResponse{
+					ID:        actualTodoRes.ID,
+					Title:     "new title",
+					Contents:  "new contents",
+					CreatedAt: actualTodoRes.CreatedAt,
+				}
+
+				return testutil.JSONStringFromInterface(suite.T(), expectedTodoRes)
+			},
+		},
+		{
+			description: "ShouldReturnBadRequestErr_WhenNotExistTitle",
+			reqBody: testutil.ReqBodyFromInterface(suite.T(), todo.CreateTodoRequest{
+				Title:    "",
+				Contents: "new contents",
+			}),
+			expectedStatus: http.StatusBadRequest,
+			expectedJSONFn: func(actualJSON string) string {
+				return actualJSON
+			},
+		},
 	}
 
-	expectedStatus := http.StatusBadRequest
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualRes := testutil.ActualResponse(
+				suite.T(),
+				suite.ginEngine,
+				"POST",
+				todo.APIPath,
+				tc.reqBody,
+			)
 
-	reqBody := testutil.ReqBodyFromInterface(suite.T(), invalidCreateTodoReq)
+			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
-	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "POST", "/todos/", reqBody)
-	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
+			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 
-	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
-	assert.NotNil(suite.T(), actualJSON)
+			suite.Equal(tc.expectedJSONFn(actualJSON), actualJSON)
+		})
+	}
 }
 
-func (suite *controllerIntegrationTestSuite) TestUpdateTodoByIDExpectTodoUpdated() {
-	createTodoReq := CreateTodoRequest{
-		Title:    "updated title",
-		Contents: "updated contents",
+func (suite *controllerIntegration) TestUpdateTodoByID() {
+	testCases := []struct {
+		description    string
+		argsTodoID     string
+		reqBody        io.Reader
+		expectedStatus int
+		expectedJSON   string
+	}{
+		{
+			description: "ShouldUpdateTodo",
+			argsTodoID:  suite.testTodos[WillUpdatedTodoIdx].ID.String(),
+			reqBody: testutil.ReqBodyFromInterface(suite.T(), todo.CreateTodoRequest{
+				Title:    "updated title",
+				Contents: "updated contents",
+			}),
+			expectedStatus: http.StatusOK,
+			expectedJSON: testutil.JSONStringFromInterface(suite.T(), todo.TodoResponse{
+				ID:        suite.testTodos[WillUpdatedTodoIdx].ID,
+				Title:     "updated title",
+				Contents:  "updated contents",
+				CreatedAt: suite.testTodos[WillUpdatedTodoIdx].TodoResponse().CreatedAt,
+			}),
+		},
+		{
+			description: "ShouldReturnNotFoundErr",
+			argsTodoID:  todo.EmptyTodo.ID.String(),
+			reqBody: testutil.ReqBodyFromInterface(suite.T(), todo.CreateTodoRequest{
+				Title:    "updated title",
+				Contents: "updated contents",
+			}),
+			expectedStatus: http.StatusNotFound,
+			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
+				common.NewErrResp(common.ErrEntityNotFound)),
+		},
 	}
 
-	willUpdateTodoRes := suite.testTodos[WillUpdatedTodoIdx].TodoResponse()
-	willUpdateTodoRes.Title = createTodoReq.Title
-	willUpdateTodoRes.Contents = createTodoReq.Contents
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualRes := testutil.ActualResponse(
+				suite.T(),
+				suite.ginEngine,
+				"PUT",
+				todo.APIPath+tc.argsTodoID,
+				tc.reqBody,
+			)
 
-	expectedStatus := http.StatusOK
-	expectedJSON := testutil.JSONStringFromInterface(suite.T(), willUpdateTodoRes)
+			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
-	reqBody := testutil.ReqBodyFromInterface(suite.T(), createTodoReq)
+			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 
-	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "PUT", "/todos/"+willUpdateTodoRes.ID.String(), reqBody)
-	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
-
-	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
-	assert.Equal(suite.T(), expectedJSON, actualJSON)
+			suite.Equal(tc.expectedJSON, actualJSON)
+		})
+	}
 }
 
-func (suite *controllerIntegrationTestSuite) TestUpdateTodoByIDExpectNotFoundReturn() {
-	notExistsTodoID := uuid.Nil
-	createTodoReq := CreateTodoRequest{
-		Title:    "updated title",
-		Contents: "updated contents",
+func (suite *controllerIntegration) TestRemoveTodoByID() {
+	testCases := []struct {
+		description    string
+		argsTodoID     string
+		expectedStatus int
+		expectedJSON   string
+	}{
+		{
+			description:    "ShouldRemoveTodo",
+			argsTodoID:     suite.testTodos[WillRemovedTodoIdx].ID.String(),
+			expectedStatus: http.StatusOK,
+			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
+				suite.testTodos[WillRemovedTodoIdx].TodoResponse()),
+		},
+		{
+			description:    "ShouldReturnNotFoundErr",
+			argsTodoID:     todo.EmptyTodo.ID.String(),
+			expectedStatus: http.StatusNotFound,
+			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
+				common.NewErrResp(common.ErrEntityNotFound)),
+		},
 	}
 
-	expectedStatus := http.StatusNotFound
-	expectedErrRes := common.NewErrResp(common.ErrEntityNotFound)
-	expectedJSON := testutil.JSONStringFromInterface(suite.T(), expectedErrRes)
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualRes := testutil.ActualResponse(
+				suite.T(),
+				suite.ginEngine,
+				"DELETE",
+				todo.APIPath+tc.argsTodoID,
+				nil,
+			)
 
-	reqBody := testutil.ReqBodyFromInterface(suite.T(), createTodoReq)
+			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
-	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "PUT", "/todos/"+notExistsTodoID.String(), reqBody)
-	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
+			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
 
-	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
-	assert.Equal(suite.T(), expectedJSON, actualJSON)
+			suite.Equal(tc.expectedJSON, actualJSON)
+		})
+	}
 }
 
-func (suite *controllerIntegrationTestSuite) TestRemoveTodoByIDExpectTodoRemoved() {
-	willRemoveTodoRes := suite.testTodos[WillRemovedTodoIdx].TodoResponse()
+func TodoResFromJSONString(t *testing.T, jsonString string) todo.TodoResponse {
+	var result todo.TodoResponse
 
-	expectedStatus := http.StatusOK
-	expectedJSON := testutil.JSONStringFromInterface(suite.T(), willRemoveTodoRes)
-
-	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "DELETE", "/todos/"+willRemoveTodoRes.ID.String(), nil)
-	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
-
-	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
-	assert.Equal(suite.T(), expectedJSON, actualJSON)
-}
-
-func (suite *controllerIntegrationTestSuite) TestRemoveTodoByIDExpectNotFoundReturn() {
-	notExistsTodoID := uuid.Nil
-
-	expectedStatus := http.StatusNotFound
-	expectedErrRes := common.NewErrResp(common.ErrEntityNotFound)
-	expectedJSON := testutil.JSONStringFromInterface(suite.T(), expectedErrRes)
-
-	actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine, "DELETE", "/todos/"+notExistsTodoID.String(), nil)
-	actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
-
-	assert.Equal(suite.T(), expectedStatus, actualRes.StatusCode)
-	assert.Equal(suite.T(), expectedJSON, actualJSON)
-}
-
-func todoResFromResBody(t *testing.T, body io.Reader) TodoResponse {
-	var result TodoResponse
-
-	err := json.NewDecoder(body).Decode(&result)
+	err := json.Unmarshal([]byte(jsonString), &result)
 	require.NoError(t, err)
 
 	return result
