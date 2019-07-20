@@ -1,14 +1,14 @@
-package todo
+package todo_test
 
 import (
 	"testing"
 
 	"github.com/gghcode/go-gin-starterkit/api/common"
+	"github.com/gghcode/go-gin-starterkit/api/todo"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
+
 	"github.com/jinzhu/gorm"
-	uuid "github.com/satori/go.uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -19,15 +19,15 @@ const (
 	WillRemovedTodoIdx = 2
 )
 
-type repoIntegrationSuite struct {
+type repoIntegration struct {
 	suite.Suite
 
 	gormDB *gorm.DB
 	dbConn *db.Conn
 
-	repo Repository
+	repo todo.Repository
 
-	testTodos []Todo
+	testTodos []todo.Todo
 }
 
 func TestTodoRepoIntegration(t *testing.T) {
@@ -35,10 +35,10 @@ func TestTodoRepoIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	suite.Run(t, new(repoIntegrationSuite))
+	suite.Run(t, new(repoIntegration))
 }
 
-func (suite *repoIntegrationSuite) SetupSuite() {
+func (suite *repoIntegration) SetupSuite() {
 	conf, err := config.NewBuilder().
 		BindEnvs("TEST").
 		Build()
@@ -47,20 +47,20 @@ func (suite *repoIntegrationSuite) SetupSuite() {
 	require.NoError(suite.T(), err)
 
 	suite.dbConn = dbConn
-	suite.repo = NewRepository(suite.dbConn)
+	suite.repo = todo.NewRepository(suite.dbConn)
 
 	suite.testTodos, err = pushTestDataToDB(suite.repo)
 	require.NoError(suite.T(), err)
 }
 
-func pushTestDataToDB(repo Repository) ([]Todo, error) {
-	todos := []Todo{
-		Todo{Title: "will fetched todo", Contents: "first new contents"},
-		Todo{Title: "will updated todo", Contents: "second new contents"},
-		Todo{Title: "will removed todo", Contents: "third new contents"},
+func pushTestDataToDB(repo todo.Repository) ([]todo.Todo, error) {
+	todos := []todo.Todo{
+		todo.Todo{Title: "will fetched todo", Contents: "first new contents"},
+		todo.Todo{Title: "will updated todo", Contents: "second new contents"},
+		todo.Todo{Title: "will removed todo", Contents: "third new contents"},
 	}
 
-	var result []Todo
+	var result []todo.Todo
 
 	for _, todo := range todos {
 		insertedTodo, err := repo.CreateTodo(todo)
@@ -74,88 +74,170 @@ func pushTestDataToDB(repo Repository) ([]Todo, error) {
 	return result, nil
 }
 
-func (suite *repoIntegrationSuite) TearDownSuite() {
+func (suite *repoIntegration) TearDownSuite() {
 	suite.dbConn.Close()
 }
 
-func (suite *repoIntegrationSuite) TestGetTodosExpectTodosFetched() {
-	actualTodos, err := suite.repo.GetTodos()
-	require.NoError(suite.T(), err)
-
-	assert.NotNil(suite.T(), actualTodos)
-}
-
-func (suite *repoIntegrationSuite) TestGetTodoByIDExpectTodoFetched() {
-	expectedTodo := suite.testTodos[WillFetchedTodoIdx]
-
-	actualTodo, err := suite.repo.GetTodoByTodoID(expectedTodo.ID.String())
-	require.NoError(suite.T(), err)
-
-	expectedTodo.CreatedAt = actualTodo.CreatedAt
-
-	assert.Equal(suite.T(), expectedTodo, actualTodo)
-}
-
-func (suite *repoIntegrationSuite) TestGetTodoByIDExpectNotFoundErrReturn() {
-	expectedError := common.ErrEntityNotFound
-	notExistsTodoID := uuid.Nil
-
-	_, actualError := suite.repo.GetTodoByTodoID(notExistsTodoID.String())
-
-	assert.Equal(suite.T(), expectedError, actualError)
-}
-
-func (suite *repoIntegrationSuite) TestCreateTodoExpectTodoCreated() {
-	expectedTodo := Todo{
-		Title:    "new title",
-		Contents: "new contents",
+func (suite *repoIntegration) TestGetTodos() {
+	testCases := []struct {
+		description     string
+		expectedTodosFn func([]todo.Todo) []todo.Todo
+		expectedErr     error
+	}{
+		{
+			description: "ShouldFetchTodos",
+			expectedTodosFn: func(actualTodo []todo.Todo) []todo.Todo {
+				return actualTodo
+			},
+			expectedErr: nil,
+		},
 	}
 
-	actualTodo, err := suite.repo.CreateTodo(expectedTodo)
-	require.NoError(suite.T(), err)
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualTodos, actualErr := suite.repo.GetTodos()
 
-	expectedTodo.ID = actualTodo.ID
-	expectedTodo.CreatedAt = actualTodo.CreatedAt
-
-	assert.Equal(suite.T(), expectedTodo, actualTodo)
+			suite.Equal(tc.expectedTodosFn(actualTodos), actualTodos)
+			suite.Equal(tc.expectedErr, actualErr)
+		})
+	}
 }
 
-func (suite *repoIntegrationSuite) TestUpdateTodoByIDExpectTodoUpdated() {
-	expectedTodo := suite.testTodos[WillUpdatedTodoIdx]
-	expectedTodo.Title = "updated title"
-	expectedTodo.Contents = "updated contents"
+func (suite *repoIntegration) TestGetTodoByID() {
+	testCases := []struct {
+		description  string
+		argsTodoID   string
+		expectedTodo todo.Todo
+		expectedErr  error
+	}{
+		{
+			description:  "ShouldFetchTodo",
+			argsTodoID:   suite.testTodos[WillFetchedTodoIdx].ID.String(),
+			expectedTodo: suite.testTodos[WillFetchedTodoIdx],
+			expectedErr:  nil,
+		},
+		{
+			description:  "ShouldReturnNotFoundErr",
+			argsTodoID:   todo.EmptyTodo.ID.String(),
+			expectedTodo: todo.EmptyTodo,
+			expectedErr:  common.ErrEntityNotFound,
+		},
+	}
 
-	actualTodo, err := suite.repo.UpdateTodoByTodoID(
-		expectedTodo.ID.String(), expectedTodo)
-	require.NoError(suite.T(), err)
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualTodo, actualErr := suite.repo.GetTodoByTodoID(tc.argsTodoID)
 
-	assert.Equal(suite.T(), expectedTodo, actualTodo)
+			suite.Equal(tc.expectedTodo, actualTodo)
+			suite.Equal(tc.expectedErr, actualErr)
+		})
+	}
 }
 
-func (suite *repoIntegrationSuite) TestUpdateTodoByIDExpectNotFoundErrReturn() {
-	expectedError := common.ErrEntityNotFound
-	notExistsTodoID := uuid.Nil
+func (suite *repoIntegration) TestCreateTodo() {
+	testCases := []struct {
+		description    string
+		argsTodo       todo.Todo
+		expectedTodoFn func(todo.Todo) todo.Todo
+		expectedErr    error
+	}{
+		{
+			description: "ShouldCreateTodo",
+			argsTodo:    todo.Todo{Title: "new title", Contents: "new contents"},
+			expectedTodoFn: func(insertedTodo todo.Todo) todo.Todo {
+				todo := todo.Todo{Title: "new title", Contents: "new contents"}
+				todo.ID = insertedTodo.ID
+				todo.CreatedAt = insertedTodo.CreatedAt
 
-	_, actualError := suite.repo.UpdateTodoByTodoID(
-		notExistsTodoID.String(), Todo{})
+				return todo
+			},
+			expectedErr: nil,
+		},
+	}
 
-	assert.Equal(suite.T(), expectedError, actualError)
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualTodo, actualErr := suite.repo.CreateTodo(tc.argsTodo)
+
+			suite.Equal(tc.expectedTodoFn(actualTodo), actualTodo)
+			suite.Equal(tc.expectedErr, actualErr)
+		})
+	}
 }
 
-func (suite *repoIntegrationSuite) TestRemoveTodoByIDTodoExpectTodoRemoved() {
-	expectedTodo := suite.testTodos[WillRemovedTodoIdx]
+func (suite *repoIntegration) TestUpdateTodoByID() {
+	testCases := []struct {
+		description  string
+		argsTodoID   string
+		argsTodo     todo.Todo
+		expectedTodo todo.Todo
+		expectedErr  error
+	}{
+		{
+			description: "ShouldUpdateTodo",
+			argsTodoID:  suite.testTodos[WillUpdatedTodoIdx].ID.String(),
+			argsTodo: todo.Todo{
+				ID:        suite.testTodos[WillUpdatedTodoIdx].ID,
+				Title:     "will update title",
+				Contents:  "will update contents",
+				CreatedAt: suite.testTodos[WillUpdatedTodoIdx].CreatedAt,
+			},
+			expectedTodo: todo.Todo{
+				ID:        suite.testTodos[WillUpdatedTodoIdx].ID,
+				Title:     "will update title",
+				Contents:  "will update contents",
+				CreatedAt: suite.testTodos[WillUpdatedTodoIdx].CreatedAt,
+			},
+			expectedErr: nil,
+		},
+		{
+			description:  "ShouldReturnNotFoundErr",
+			argsTodoID:   todo.EmptyTodo.ID.String(),
+			argsTodo:     todo.EmptyTodo,
+			expectedTodo: todo.EmptyTodo,
+			expectedErr:  common.ErrEntityNotFound,
+		},
+	}
 
-	actualTodo, err := suite.repo.RemoveTodoByTodoID(expectedTodo.ID.String())
-	require.NoError(suite.T(), err)
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualTodo, actualErr := suite.repo.UpdateTodoByTodoID(
+				tc.argsTodoID, tc.argsTodo,
+			)
 
-	assert.Equal(suite.T(), expectedTodo, actualTodo)
+			suite.Equal(tc.expectedTodo, actualTodo)
+			suite.Equal(tc.expectedErr, actualErr)
+		})
+	}
 }
 
-func (suite *repoIntegrationSuite) TestRemoveTodoByIDExpectNotFoundErrReturn() {
-	expectedError := common.ErrEntityNotFound
-	notExistsTodoID := uuid.Nil
+func (suite *repoIntegration) testRemoveTodoByID() {
+	testCases := []struct {
+		description  string
+		argsTodoID   string
+		expectedTodo todo.Todo
+		expectedErr  error
+	}{
+		{
+			description:  "ShouldRemoveTodo",
+			argsTodoID:   suite.testTodos[WillRemovedTodoIdx].ID.String(),
+			expectedTodo: suite.testTodos[WillRemovedTodoIdx],
+			expectedErr:  nil,
+		},
+		{
+			description:  "ShouldReturnNotFoundErr",
+			argsTodoID:   todo.EmptyTodo.ID.String(),
+			expectedTodo: todo.EmptyTodo,
+			expectedErr:  common.ErrEntityNotFound,
+		},
+	}
 
-	_, actualError := suite.repo.RemoveTodoByTodoID(notExistsTodoID.String())
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualTodo, actualErr := suite.repo.RemoveTodoByTodoID(tc.argsTodoID)
 
-	assert.Equal(suite.T(), expectedError, actualError)
+			suite.Equal(tc.expectedTodo, actualTodo)
+			suite.Equal(tc.expectedErr, actualErr)
+		})
+	}
 }

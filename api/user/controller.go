@@ -10,6 +10,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// APIPath is path prefix
+const APIPath = "/users/"
+
 // Controller is user controller
 type Controller struct {
 	repo     Repository
@@ -26,7 +29,7 @@ func NewController(repo Repository, passport service.Passport) *Controller {
 
 // RegisterRoutes register handler routes.
 func (controller *Controller) RegisterRoutes(router gin.IRouter) {
-	userRouter := router.Group("users/")
+	userRouter := router.Group(APIPath)
 	{
 		userRouter.Handle("POST", "/", controller.createUser)
 

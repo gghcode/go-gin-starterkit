@@ -71,7 +71,7 @@ func (suite *controllerIntegration) TestCreateUser() {
 		expectedJSON   func(string) string
 	}{
 		{
-			description: "ShouldBeCreated",
+			description: "ShouldCreateUser",
 			createUserReq: &user.CreateUserRequest{
 				UserName: "New User",
 				Password: "New Password",
@@ -89,7 +89,7 @@ func (suite *controllerIntegration) TestCreateUser() {
 			},
 		},
 		{
-			description: "ShouldBeConflictWhenAlreadyExistUser",
+			description: "ShouldReturnConflictErr_WhenAlreadyExistUser",
 			createUserReq: &user.CreateUserRequest{
 				UserName: suite.testUsers[WillFetchedEntityIdx].UserName,
 				Password: "New Password",
@@ -107,7 +107,7 @@ func (suite *controllerIntegration) TestCreateUser() {
 			reqBody := testutil.ReqBodyFromInterface(suite.T(), tc.createUserReq)
 
 			actualRes := testutil.ActualResponse(suite.T(),
-				suite.ginEngine, "POST", "/users/", reqBody)
+				suite.ginEngine, "POST", user.APIPath, reqBody)
 			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
 			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
@@ -124,14 +124,14 @@ func (suite *controllerIntegration) TestGetUserByName() {
 		expectedJSON   string
 	}{
 		{
-			description:    "ShouldBeOK",
+			description:    "ShouldReturnOK",
 			username:       suite.testUsers[WillFetchedEntityIdx].UserName,
 			expectedStatus: http.StatusOK,
 			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
 				suite.testUsers[WillFetchedEntityIdx].Response()),
 		},
 		{
-			description:    "ShouldBeNotFound",
+			description:    "ShouldReturnNotFoundErr",
 			username:       "NOT_EXISTS_USER_NAME",
 			expectedStatus: http.StatusNotFound,
 			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
@@ -142,7 +142,7 @@ func (suite *controllerIntegration) TestGetUserByName() {
 	for _, tc := range testCases {
 		suite.Run(tc.description, func() {
 			actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine,
-				"GET", "/users/"+tc.username, nil)
+				"GET", user.APIPath+tc.username, nil)
 			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
 			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
@@ -160,7 +160,7 @@ func (suite *controllerIntegration) TestUpdateUserByID() {
 		expectedJSON   string
 	}{
 		{
-			description:    "ShouldBeOK",
+			description:    "ShouldReturnOK",
 			userID:         strconv.FormatInt(suite.testUsers[WillUpdatedEntityIdx].ID, 10),
 			updateUserReq:  &user.UpdateUserRequest{UserName: "updated_username"},
 			expectedStatus: http.StatusOK,
@@ -171,14 +171,14 @@ func (suite *controllerIntegration) TestUpdateUserByID() {
 			}),
 		},
 		{
-			description:    "ShouldBeBadRequest_WhenNotContainUserName",
+			description:    "ShouldReturnBadRequestErr_WhenNotContainUserName",
 			userID:         strconv.FormatInt(suite.testUsers[WillUpdatedEntityIdx].ID, 10),
 			updateUserReq:  nil,
 			expectedStatus: http.StatusBadRequest,
 			expectedJSON:   "",
 		},
 		{
-			description:    "ShouldBeBadRequest_WhenInvalidUserID",
+			description:    "ShouldReturnBadRequestErr_WhenInvalidUserID",
 			userID:         "NOT_INTEGER_USER_ID",
 			updateUserReq:  &user.UpdateUserRequest{UserName: "username"},
 			expectedStatus: http.StatusBadRequest,
@@ -186,14 +186,14 @@ func (suite *controllerIntegration) TestUpdateUserByID() {
 				common.NewErrResp(common.ErrParsingFailed)),
 		},
 		{
-			description:    "ShouldBeBadRequest_WhenLessUserNameLenMin4",
+			description:    "ShouldReturnBadRequestErr_WhenLessUserNameLenMin4",
 			userID:         strconv.FormatInt(suite.testUsers[WillUpdatedEntityIdx].ID, 10),
 			updateUserReq:  &user.UpdateUserRequest{UserName: "use"},
 			expectedStatus: http.StatusBadRequest,
 			expectedJSON:   "",
 		},
 		{
-			description:    "ShouldBeNotFound_WhenNotExistsEntity",
+			description:    "ShouldReturnNotFoundErr_WhenNotExistsEntity",
 			userID:         strconv.FormatInt(user.EmptyUser.ID, 10),
 			updateUserReq:  &user.UpdateUserRequest{UserName: "username100"},
 			expectedStatus: http.StatusNotFound,
@@ -207,7 +207,7 @@ func (suite *controllerIntegration) TestUpdateUserByID() {
 			reqBody := testutil.ReqBodyFromInterface(suite.T(), tc.updateUserReq)
 
 			actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine,
-				"PUT", "/users/"+tc.userID, reqBody)
+				"PUT", user.APIPath+tc.userID, reqBody)
 			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
 			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)
@@ -226,21 +226,21 @@ func (suite *controllerIntegration) TestRemoveUser() {
 		expectedJSON   string
 	}{
 		{
-			description:    "ShouldBeOK",
+			description:    "ShouldReturnOK",
 			userID:         strconv.FormatInt(suite.testUsers[WillRemovedEntityIdx].ID, 10),
 			expectedStatus: http.StatusOK,
 			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
 				suite.testUsers[WillRemovedEntityIdx].Response()),
 		},
 		{
-			description:    "ShouldBeBadRequest_WhenInvalidUserID",
+			description:    "ShouldReturnBadRequestErr_WhenInvalidUserID",
 			userID:         "INVALID_STRING_USER_ID",
 			expectedStatus: http.StatusBadRequest,
 			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
 				common.NewErrResp(common.ErrParsingFailed)),
 		},
 		{
-			description:    "ShouldBeNotFound_WhenNotExistEntity",
+			description:    "ShouldReturnNotFoundErr_WhenNotExistEntity",
 			userID:         strconv.FormatInt(user.EmptyUser.ID, 10),
 			expectedStatus: http.StatusNotFound,
 			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
@@ -251,7 +251,7 @@ func (suite *controllerIntegration) TestRemoveUser() {
 	for _, tc := range testCases {
 		suite.Run(tc.description, func() {
 			actualRes := testutil.ActualResponse(suite.T(), suite.ginEngine,
-				"DELETE", "/users/"+tc.userID, nil)
+				"DELETE", user.APIPath+tc.userID, nil)
 			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
 
 			actualJSON := testutil.JSONStringFromResBody(suite.T(), actualRes.Body)

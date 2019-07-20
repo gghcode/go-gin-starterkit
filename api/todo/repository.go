@@ -9,8 +9,6 @@ import (
 	uuid "github.com/satori/go.uuid"
 )
 
-var EmptyTodo = Todo{}
-
 // Repository communications with db connection.
 type Repository interface {
 	CreateTodo(todo Todo) (Todo, error)

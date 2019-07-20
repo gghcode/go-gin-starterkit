@@ -10,7 +10,6 @@ import (
 	"github.com/jinzhu/gorm"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"gotest.tools/assert"
 )
 
 const (
@@ -19,7 +18,7 @@ const (
 	WillRemovedEntityIdx = 2
 )
 
-type repoIntegrationSuite struct {
+type repoIntegration struct {
 	suite.Suite
 
 	gormDB *gorm.DB
@@ -35,10 +34,10 @@ func TestUserRepoIntegration(t *testing.T) {
 		t.Skip("skipping integration test")
 	}
 
-	suite.Run(t, new(repoIntegrationSuite))
+	suite.Run(t, new(repoIntegration))
 }
 
-func (suite *repoIntegrationSuite) SetupSuite() {
+func (suite *repoIntegration) SetupSuite() {
 	conf, err := config.NewBuilder().
 		BindEnvs("TEST").
 		Build()
@@ -74,113 +73,184 @@ func pushTestDataToDB(repo user.Repository, prefix string) ([]user.User, error) 
 	return result, nil
 }
 
-func (suite *repoIntegrationSuite) TearDownSuite() {
+func (suite *repoIntegration) TearDownSuite() {
 	suite.dbConn.Close()
 }
 
-func (suite *repoIntegrationSuite) TestCreateUserExpectUserCreated() {
-	expectedUser := user.User{
-		UserName:     "newUser",
-		PasswordHash: []byte("passwordHash"),
+func (suite *repoIntegration) TestCreateUser() {
+	testCases := []struct {
+		description    string
+		argsUser       user.User
+		expectedUserFn func(user.User) user.User
+		expectedErr    error
+	}{
+		{
+			description: "ShouldCreateUser",
+			argsUser:    user.User{UserName: "newUser", PasswordHash: []byte("password")},
+			expectedUserFn: func(actualUser user.User) user.User {
+				user := user.User{UserName: "newUser", PasswordHash: []byte("password")}
+				user.ID = actualUser.ID
+				user.CreatedAt = actualUser.CreatedAt
+
+				return user
+			},
+			expectedErr: nil,
+		},
+		{
+			description: "ShouldReturnConflictErr_WhenAlreadyExistsUserName",
+			argsUser: user.User{
+				UserName:     suite.testUsers[WillFetchedEntityIdx].UserName,
+				PasswordHash: []byte("password"),
+			},
+			expectedUserFn: func(user.User) user.User {
+				return user.EmptyUser
+			},
+			expectedErr: common.ErrAlreadyExistsEntity,
+		},
 	}
 
-	actualUser, err := suite.repo.CreateUser(expectedUser)
-	require.NoError(suite.T(), err)
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualUser, actualErr := suite.repo.CreateUser(tc.argsUser)
 
-	expectedUser.ID = actualUser.ID
-	expectedUser.CreatedAt = actualUser.CreatedAt
-
-	assertUserEqual(suite.T(), expectedUser, actualUser)
+			suite.Equal(tc.expectedUserFn(actualUser), actualUser)
+			suite.Equal(tc.expectedErr, actualErr)
+		})
+	}
 }
 
-func (suite *repoIntegrationSuite) TestCreateUserExpectAlreadyExistsErrReturn() {
-	alreadyExistsUser := user.User{
-		UserName:     suite.testUsers[WillFetchedEntityIdx].UserName,
-		PasswordHash: []byte("password"),
+func (suite *repoIntegration) TestGetUserByUserName() {
+	testCases := []struct {
+		description  string
+		argsUserName string
+		expectedUser user.User
+		expectedErr  error
+	}{
+		{
+			description:  "ShouldFetchUser",
+			argsUserName: suite.testUsers[WillFetchedEntityIdx].UserName,
+			expectedUser: suite.testUsers[WillFetchedEntityIdx],
+			expectedErr:  nil,
+		},
+		{
+			description:  "ShouldReturnNotFoundErr",
+			argsUserName: user.EmptyUser.UserName,
+			expectedUser: user.EmptyUser,
+			expectedErr:  common.ErrEntityNotFound,
+		},
 	}
 
-	expectedErr := common.ErrAlreadyExistsEntity
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualUser, actualErr := suite.repo.GetUserByUserName(tc.argsUserName)
 
-	_, actualErr := suite.repo.CreateUser(alreadyExistsUser)
-
-	assert.Equal(suite.T(), expectedErr, actualErr)
+			suite.Equal(tc.expectedUser, actualUser)
+			suite.Equal(tc.expectedErr, actualErr)
+		})
+	}
 }
 
-func (suite *repoIntegrationSuite) TestGetUserByUserNameExpectUserFetched() {
-	expectedUser := suite.testUsers[WillFetchedEntityIdx]
+func (suite *repoIntegration) TestGetUserByID() {
+	testCases := []struct {
+		description  string
+		argsUserID   int64
+		expectedUser user.User
+		expectedErr  error
+	}{
+		{
+			description:  "ShouldFetchUser",
+			argsUserID:   suite.testUsers[WillFetchedEntityIdx].ID,
+			expectedUser: suite.testUsers[WillFetchedEntityIdx],
+			expectedErr:  nil,
+		},
+		{
+			description:  "ShouldReturnNotFoundErr",
+			argsUserID:   user.EmptyUser.ID,
+			expectedUser: user.EmptyUser,
+			expectedErr:  common.ErrEntityNotFound,
+		},
+	}
 
-	actualUser, err := suite.repo.GetUserByUserName(expectedUser.UserName)
-	require.NoError(suite.T(), err)
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualUser, actualErr := suite.repo.GetUserByUserID(tc.argsUserID)
 
-	assertUserEqual(suite.T(), expectedUser, actualUser)
+			suite.Equal(tc.expectedUser, actualUser)
+			suite.Equal(tc.expectedErr, actualErr)
+		})
+	}
 }
 
-func (suite *repoIntegrationSuite) TestGetUserByUserNameExpectNotFoundErrReturn() {
-	notExistsUserName := "NOT_EXISTS_USER_NAME"
-	expectedError := common.ErrEntityNotFound
+func (suite *repoIntegration) TestUpdateUserByID() {
+	testCases := []struct {
+		description  string
+		argsUserID   int64
+		argsUser     user.User
+		expectedUser user.User
+		expectedErr  error
+	}{
+		{
+			description: "ShouldUpdateUser",
+			argsUserID:  suite.testUsers[WillUpdatedEntityIdx].ID,
+			argsUser: user.User{
+				UserName: "willUpdateUserName",
+			},
+			expectedUser: user.User{
+				ID:           suite.testUsers[WillUpdatedEntityIdx].ID,
+				UserName:     "willUpdateUserName",
+				PasswordHash: suite.testUsers[WillUpdatedEntityIdx].PasswordHash,
+				CreatedAt:    suite.testUsers[WillUpdatedEntityIdx].CreatedAt,
+			},
+			expectedErr: nil,
+		},
+		{
+			description:  "ShouldReturnNotFoundErr",
+			argsUserID:   user.EmptyUser.ID,
+			argsUser:     user.EmptyUser,
+			expectedUser: user.EmptyUser,
+			expectedErr:  common.ErrEntityNotFound,
+		},
+	}
 
-	_, actualError := suite.repo.GetUserByUserName(notExistsUserName)
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualUser, actualErr := suite.repo.UpdateUserByUserID(
+				tc.argsUserID, tc.argsUser,
+			)
 
-	assert.Equal(suite.T(), expectedError, actualError)
+			suite.Equal(tc.expectedUser, actualUser)
+			suite.Equal(tc.expectedErr, actualErr)
+		})
+	}
 }
 
-func (suite *repoIntegrationSuite) TestGetUserByIDExpectUserFetched() {
-	expectedUser := suite.testUsers[WillFetchedEntityIdx]
+func (suite *repoIntegration) TestRemoveUserByID() {
+	testCases := []struct {
+		description  string
+		argsUserID   int64
+		expectedUser user.User
+		expectedErr  error
+	}{
+		{
+			description:  "ShouldRemoveUser",
+			argsUserID:   suite.testUsers[WillRemovedEntityIdx].ID,
+			expectedUser: suite.testUsers[WillRemovedEntityIdx],
+			expectedErr:  nil,
+		},
+		{
+			description:  "ShouldReturnNotFoundErr",
+			argsUserID:   user.EmptyUser.ID,
+			expectedUser: user.EmptyUser,
+			expectedErr:  common.ErrEntityNotFound,
+		},
+	}
 
-	actualUser, err := suite.repo.GetUserByUserID(expectedUser.ID)
-	require.NoError(suite.T(), err)
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualUser, actualErr := suite.repo.RemoveUserByUserID(tc.argsUserID)
 
-	assertUserEqual(suite.T(), expectedUser, actualUser)
-}
-
-func (suite *repoIntegrationSuite) TestGetUserByIDExpectNotFoundErrReturn() {
-	notExistsUserID := user.EmptyUser.ID
-	expectedError := common.ErrEntityNotFound
-
-	_, actualError := suite.repo.GetUserByUserID(notExistsUserID)
-
-	assert.Equal(suite.T(), expectedError, actualError)
-}
-
-func (suite *repoIntegrationSuite) TestUpdateUserByIDExpectUserUpdated() {
-	expectedUser := suite.testUsers[WillUpdatedEntityIdx]
-	expectedUser.UserName = "updated name"
-
-	actualTodo, err := suite.repo.UpdateUserByUserID(expectedUser.ID, expectedUser)
-	require.NoError(suite.T(), err)
-
-	assertUserEqual(suite.T(), expectedUser, actualTodo)
-}
-
-func (suite *repoIntegrationSuite) TestUpdateUserByIDExpectNotFoundErrReturn() {
-	notExistsUserID := user.EmptyUser.ID
-	expectedError := common.ErrEntityNotFound
-
-	_, actualError := suite.repo.UpdateUserByUserID(notExistsUserID, user.User{})
-
-	assert.Equal(suite.T(), expectedError, actualError)
-}
-
-func (suite *repoIntegrationSuite) TestRemoveUserByIDExpectUserRemoved() {
-	expectedUser := suite.testUsers[WillRemovedEntityIdx]
-
-	actualUser, err := suite.repo.RemoveUserByUserID(expectedUser.ID)
-	require.NoError(suite.T(), err)
-
-	assertUserEqual(suite.T(), expectedUser, actualUser)
-}
-
-func (suite *repoIntegrationSuite) TestRemoveUserByIDExpectNotFoundErrReturn() {
-	notExistsTodoID := user.EmptyUser.ID
-	expectedError := common.ErrEntityNotFound
-
-	_, actualError := suite.repo.RemoveUserByUserID(notExistsTodoID)
-
-	assert.Equal(suite.T(), expectedError, actualError)
-}
-
-func assertUserEqual(t *testing.T, expect user.User, actual user.User) {
-	assert.Equal(t, expect.ID, actual.ID)
-	assert.Equal(t, expect.UserName, actual.UserName)
-	assert.Equal(t, expect.CreatedAt, actual.CreatedAt)
+			suite.Equal(tc.expectedUser, actualUser)
+			suite.Equal(tc.expectedErr, actualErr)
+		})
+	}
 }

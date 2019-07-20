@@ -8,8 +8,8 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gghcode/go-gin-starterkit/api/common"
-	"github.com/gghcode/go-gin-starterkit/internal/testutil"
 	"github.com/gghcode/go-gin-starterkit/config"
+	"github.com/gghcode/go-gin-starterkit/internal/testutil"
 
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/suite"
@@ -60,7 +60,7 @@ func (suite *authUnit) TestVerifyAccessToken() {
 			expectedSub: "10",
 		},
 		{
-			description: "ShouldTokenExpiredErrReturn",
+			description: "ShouldReturnTokenExpiredErr",
 			accessTokenFn: func() string {
 				claims := &jwt.StandardClaims{
 					ExpiresAt: time.Now().Add(-300 * time.Second).Unix(),
@@ -76,22 +76,22 @@ func (suite *authUnit) TestVerifyAccessToken() {
 			expectedErr: ErrTokenExpired,
 		},
 		{
-			description:   "ShouldUnauthorizedTokenErrReturn_WhenEmptyToken",
+			description:   "ShouldReturnUnauthorizedTokenErr_WhenEmptyToken",
 			accessTokenFn: func() string { return "" },
 			expectedErr:   ErrUnauthorizedToken,
 		},
 		{
-			description:   "ShouldUnauthorizedTokenErrReturn_WhenInvalidTokenType",
+			description:   "ShouldReturnUnauthorizedTokenErr_WhenInvalidTokenType",
 			accessTokenFn: func() string { return "Bear abcd" },
 			expectedErr:   ErrUnauthorizedToken,
 		},
 		{
-			description:   "ShouldUnauthorizedTokenErrReturn_WhenShortTokenInfo",
+			description:   "ShouldReturnUnauthorizedTokenErr_WhenShortTokenInfo",
 			accessTokenFn: func() string { return "BearerValidToken" },
 			expectedErr:   ErrUnauthorizedToken,
 		},
 		{
-			description:   "ShouldUnauthorizedTokenErrReturn_WhenInvalidAccessToken",
+			description:   "ShouldReturnUnauthorizedTokenErr_WhenInvalidAccessToken",
 			accessTokenFn: func() string { return "Bearer InvalidToken" },
 			expectedErr:   ErrUnauthorizedToken,
 		},
@@ -116,13 +116,13 @@ func (suite *authUnit) TestVerifyAccessToken() {
 func (suite *authUnit) TestAuthMiddleware() {
 	testCases := []struct {
 		description    string
-		accessToken    func() (accessToken string)
+		accessTokenFn  func() (accessToken string)
 		expectedStatus int
 		expectedJSON   string
 	}{
 		{
 			description: "ShouldBeSuccess",
-			accessToken: func() string {
+			accessTokenFn: func() string {
 				expiresIn := time.Duration(suite.conf.AccessExpiresInSec)
 
 				claims := &jwt.StandardClaims{
@@ -139,8 +139,8 @@ func (suite *authUnit) TestAuthMiddleware() {
 			expectedStatus: http.StatusOK,
 		},
 		{
-			description: "ShouldTokenExpiredErrReturn",
-			accessToken: func() string {
+			description: "ShouldReturnTokenExpiredErr",
+			accessTokenFn: func() string {
 				claims := &jwt.StandardClaims{
 					ExpiresAt: time.Now().Add(-300 * time.Second).Unix(),
 					IssuedAt:  time.Now().Unix(),
@@ -157,22 +157,22 @@ func (suite *authUnit) TestAuthMiddleware() {
 				common.NewErrResp(ErrTokenExpired)),
 		},
 		{
-			description:    "ShouldUnauthorizedTokenErrReturn_WhenShortTokenInfo",
-			accessToken:    func() string { return "Bearfasdf" },
+			description:    "ShouldReturnUnauthorizedTokenErr_WhenShortTokenInfo",
+			accessTokenFn:  func() string { return "Bearfasdf" },
 			expectedStatus: http.StatusUnauthorized,
 			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
 				common.NewErrResp(ErrUnauthorizedToken)),
 		},
 		{
-			description:    "ShouldUnauthorizedTokenErrReturn_WhenEmptyToken",
-			accessToken:    func() string { return "" },
+			description:    "ShouldReturnUnauthorizedTokenErr_WhenEmptyToken",
+			accessTokenFn:  func() string { return "" },
 			expectedStatus: http.StatusUnauthorized,
 			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
 				common.NewErrResp(ErrUnauthorizedToken)),
 		},
 		{
-			description:    "ShouldUnauthorizedTokenErrReturn_WhenInvalidAccessToken",
-			accessToken:    func() string { return "Bearer InvalidToken" },
+			description:    "ShouldReturnUnauthorizedTokenErr_WhenInvalidAccessToken",
+			accessTokenFn:  func() string { return "Bearer InvalidToken" },
 			expectedStatus: http.StatusUnauthorized,
 			expectedJSON: testutil.JSONStringFromInterface(suite.T(),
 				common.NewErrResp(ErrUnauthorizedToken)),
@@ -183,7 +183,7 @@ func (suite *authUnit) TestAuthMiddleware() {
 		suite.Run(tc.description, func() {
 			recorder := httptest.NewRecorder()
 			req, _ := http.NewRequest("GET", "/", nil)
-			req.Header.Add("Authorization", tc.accessToken())
+			req.Header.Add("Authorization", tc.accessTokenFn())
 
 			_, engine := gin.CreateTestContext(recorder)
 

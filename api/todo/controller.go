@@ -8,6 +8,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// APIPath is path prefix
+const APIPath = "/todos/"
+
 // Controller handles http request.
 type Controller struct {
 	repo Repository
@@ -22,7 +25,7 @@ func NewController(repo Repository) *Controller {
 
 // RegisterRoutes register handler routes.
 func (controller Controller) RegisterRoutes(router gin.IRouter) {
-	todoRouter := router.Group("todos/")
+	todoRouter := router.Group(APIPath)
 	{
 		todoRouter.Handle("GET", "/", controller.getAllTodos)
 		todoRouter.Handle("POST", "/", controller.createTodo)
