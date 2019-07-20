@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/api/common"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gin-gonic/gin"
 )

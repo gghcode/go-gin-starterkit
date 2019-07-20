@@ -5,9 +5,9 @@ import (
 	"testing"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gghcode/go-gin-starterkit/app/api/auth"
-	"github.com/gghcode/go-gin-starterkit/app/api/common"
-	"github.com/gghcode/go-gin-starterkit/app/api/user"
+	"github.com/gghcode/go-gin-starterkit/api/auth"
+	"github.com/gghcode/go-gin-starterkit/api/common"
+	"github.com/gghcode/go-gin-starterkit/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"

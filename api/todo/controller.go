@@ -3,7 +3,7 @@ package todo
 import (
 	"net/http"
 
-	"github.com/gghcode/go-gin-starterkit/app/api/common"
+	"github.com/gghcode/go-gin-starterkit/api/common"
 	"github.com/gghcode/go-gin-starterkit/middleware"
 	"github.com/gin-gonic/gin"
 )
@@ -22,14 +22,17 @@ func NewController(repo Repository) *Controller {
 
 // RegisterRoutes register handler routes.
 func (controller Controller) RegisterRoutes(router gin.IRouter) {
-	router.Handle("GET", "/", controller.getAllTodos)
-	router.Handle("POST", "/", controller.createTodo)
-
-	authorized := router.Use(middleware.AuthRequired())
+	todoRouter := router.Group("todos/")
 	{
-		authorized.Handle("GET", "/:id", controller.getTodoByTodoID)
-		authorized.Handle("PUT", "/:id", controller.updateTodoByTodoID)
-		authorized.Handle("DELETE", "/:id", controller.removeTodoByTodoID)
+		todoRouter.Handle("GET", "/", controller.getAllTodos)
+		todoRouter.Handle("POST", "/", controller.createTodo)
+
+		authorized := todoRouter.Use(middleware.AuthRequired())
+		{
+			authorized.Handle("GET", "/:id", controller.getTodoByTodoID)
+			authorized.Handle("PUT", "/:id", controller.updateTodoByTodoID)
+			authorized.Handle("DELETE", "/:id", controller.removeTodoByTodoID)
+		}
 	}
 }
 
@@ -40,7 +43,7 @@ func (controller Controller) RegisterRoutes(router gin.IRouter) {
 // @Success 201 {object} todo.TodoResponse "ok"
 // @Failure 400 {object} common.ErrorResponse "Invalid todo payload"
 // @Tags Todo API
-// @Router /api/todos [post]
+// @Router /todos [post]
 func (controller *Controller) createTodo(ctx *gin.Context) {
 	var dtoReq CreateTodoRequest
 
@@ -68,7 +71,7 @@ func (controller *Controller) createTodo(ctx *gin.Context) {
 // @Produce json
 // @Success 200 {array} todo.TodoResponse "ok"
 // @Tags Todo API
-// @Router /api/todos [get]
+// @Router /todos [get]
 func (controller *Controller) getAllTodos(ctx *gin.Context) {
 	todos, err := controller.repo.GetTodos()
 	if err != nil {
@@ -86,7 +89,7 @@ func (controller *Controller) getAllTodos(ctx *gin.Context) {
 // @Success 200 {object} todo.TodoResponse "ok"
 // @Failure 404 {object} common.ErrorResponse "Not found entity"
 // @Tags Todo API
-// @Router /api/todos/{id} [get]
+// @Router /todos/{id} [get]
 func (controller *Controller) getTodoByTodoID(ctx *gin.Context) {
 	todoID := ctx.Param("id")
 
@@ -111,7 +114,7 @@ func (controller *Controller) getTodoByTodoID(ctx *gin.Context) {
 // @Failure 400 {object} common.ErrorResponse "Invalid todo payload"
 // @Failure 404 {object} common.ErrorResponse "Not found entity"
 // @Tags Todo API
-// @Router /api/todos/{id} [put]
+// @Router /todos/{id} [put]
 func (controller *Controller) updateTodoByTodoID(ctx *gin.Context) {
 	todoID := ctx.Param("id")
 
@@ -145,7 +148,7 @@ func (controller *Controller) updateTodoByTodoID(ctx *gin.Context) {
 // @Success 200 {object} todo.TodoResponse "ok"
 // @Failure 404 {object} common.ErrorResponse "Not found entity"
 // @Tags Todo API
-// @Router /api/todos/{id} [delete]
+// @Router /todos/{id} [delete]
 func (controller *Controller) removeTodoByTodoID(ctx *gin.Context) {
 	todoID := ctx.Param("id")
 

@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/gghcode/go-gin-starterkit/app/api/auth"
-	"github.com/gghcode/go-gin-starterkit/app/api/testutil"
-	"github.com/gghcode/go-gin-starterkit/app/api/user"
+	"github.com/gghcode/go-gin-starterkit/api/auth"
+	"github.com/gghcode/go-gin-starterkit/api/testutil"
+	"github.com/gghcode/go-gin-starterkit/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/gghcode/go-gin-starterkit/service"
@@ -24,7 +24,7 @@ type controllerIntegration struct {
 	testUser user.User
 }
 
-func TestOAuth2ControllerIntegration(t *testing.T) {
+func TestAuthControllerIntegration(t *testing.T) {
 	if testing.Short() {
 		t.Skip("skipping integration test")
 	}
@@ -105,7 +105,7 @@ func (suite *controllerIntegration) TestGetToken() {
 				suite.T(),
 				suite.ginEngine,
 				"POST",
-				"/token",
+				"/auth/token",
 				reqBody,
 			)
 

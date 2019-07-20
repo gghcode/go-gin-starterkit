@@ -15,20 +15,9 @@
         "version": "1.0"
     },
     "host": "{{.Host}}",
-    "basePath": "{{.BasePath}}",
+    "basePath": "/api",
     "paths": {
-        "/api/healthy": {
-            "get": {
-                "description": "Get server healthy",
-                "tags": [
-                    "App API"
-                ],
-                "responses": {
-                    "200": {}
-                }
-            }
-        },
-        "/api/oauth2/token": {
+        "/auth/token": {
             "post": {
                 "description": "Get new access token",
                 "consumes": [
@@ -77,7 +66,18 @@
                 }
             }
         },
-        "/api/todos": {
+        "/healthy": {
+            "get": {
+                "description": "Get server healthy",
+                "tags": [
+                    "App API"
+                ],
+                "responses": {
+                    "200": {}
+                }
+            }
+        },
+        "/todos": {
             "get": {
                 "description": "Get all todos",
                 "consumes": [
@@ -142,7 +142,7 @@
                 }
             }
         },
-        "/api/todos/{id}": {
+        "/todos/{id}": {
             "get": {
                 "security": [
                     {
@@ -278,7 +278,7 @@
                 }
             }
         },
-        "/api/users": {
+        "/users": {
             "post": {
                 "description": "Create new user",
                 "consumes": [
@@ -320,7 +320,7 @@
                 }
             }
         },
-        "/api/users/{id}": {
+        "/users/{id}": {
             "put": {
                 "security": [
                     {
@@ -420,7 +420,7 @@
                 }
             }
         },
-        "/api/users/{username}": {
+        "/users/{username}": {
             "get": {
                 "security": [
                     {

@@ -1,4 +1,4 @@
-basePath: '{{.BasePath}}'
+basePath: /api
 definitions:
   auth.CreateAccessTokenRequest:
     properties:
@@ -98,14 +98,7 @@ info:
   title: Go Gin Starter API
   version: "1.0"
 paths:
-  /api/healthy:
-    get:
-      description: Get server healthy
-      responses:
-        "200": {}
-      tags:
-      - App API
-  /api/oauth2/token:
+  /auth/token:
     post:
       consumes:
       - application/json
@@ -138,7 +131,14 @@ paths:
             type: object
       tags:
       - Auth API
-  /api/todos:
+  /healthy:
+    get:
+      description: Get server healthy
+      responses:
+        "200": {}
+      tags:
+      - App API
+  /todos:
     get:
       consumes:
       - application/json
@@ -181,7 +181,7 @@ paths:
             type: object
       tags:
       - Todo API
-  /api/todos/{id}:
+  /todos/{id}:
     delete:
       description: Remove todo by todo id
       parameters:
@@ -269,7 +269,7 @@ paths:
       - ApiKeyAuth: []
       tags:
       - Todo API
-  /api/users:
+  /users:
     post:
       consumes:
       - application/json
@@ -297,7 +297,7 @@ paths:
             type: object
       tags:
       - User API
-  /api/users/{id}:
+  /users/{id}:
     delete:
       description: Remove user by user id
       parameters:
@@ -362,7 +362,7 @@ paths:
       - ApiKeyAuth: []
       tags:
       - User API
-  /api/users/{username}:
+  /users/{username}:
     get:
       description: Get user by username
       parameters:

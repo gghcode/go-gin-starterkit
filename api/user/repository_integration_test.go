@@ -3,8 +3,8 @@ package user_test
 import (
 	"testing"
 
-	"github.com/gghcode/go-gin-starterkit/app/api/common"
-	"github.com/gghcode/go-gin-starterkit/app/api/user"
+	"github.com/gghcode/go-gin-starterkit/api/common"
+	"github.com/gghcode/go-gin-starterkit/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/jinzhu/gorm"
