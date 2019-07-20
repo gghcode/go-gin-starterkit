@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/gghcode/go-gin-starterkit/api/common"
-	"github.com/gghcode/go-gin-starterkit/api/testutil"
+	"github.com/gghcode/go-gin-starterkit/internal/testutil"
 	"github.com/gghcode/go-gin-starterkit/middleware"
 
 	"github.com/gghcode/go-gin-starterkit/config"

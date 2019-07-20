@@ -10,10 +10,10 @@ import (
 	"github.com/gghcode/go-gin-starterkit/service"
 
 	"github.com/gghcode/go-gin-starterkit/api/common"
-	"github.com/gghcode/go-gin-starterkit/api/testutil"
 	"github.com/gghcode/go-gin-starterkit/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
 	"github.com/gghcode/go-gin-starterkit/db"
+	"github.com/gghcode/go-gin-starterkit/internal/testutil"
 	"github.com/gin-gonic/gin"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
