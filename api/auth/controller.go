@@ -6,6 +6,7 @@ import (
 	"github.com/gghcode/go-gin-starterkit/api/common"
 	"github.com/gghcode/go-gin-starterkit/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
+	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/gghcode/go-gin-starterkit/service"
 	"github.com/gin-gonic/gin"
 )
@@ -20,10 +21,14 @@ type Controller struct {
 }
 
 // NewController return new auth controller instance.
-func NewController(conf config.Configuration, userRepo user.Repository, passport service.Passport) *Controller {
+func NewController(
+	conf config.Configuration,
+	userRepo user.Repository,
+	passport service.Passport,
+	redisConn db.RedisConn) *Controller {
 	return &Controller{
 		conf:    conf.Jwt,
-		service: NewService(conf, userRepo, passport),
+		service: NewService(conf, userRepo, passport, redisConn),
 	}
 }
 
