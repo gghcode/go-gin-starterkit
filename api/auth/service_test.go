@@ -3,6 +3,7 @@ package auth
 import (
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gghcode/go-gin-starterkit/api/common"
@@ -185,6 +186,46 @@ func (suite *serviceUnit) TestGenerateAccessToken() {
 	actualExpiresInSec := ActualExpiresInSec(suite.T(), claims)
 
 	suite.Equal(expectedExpiresInSec, actualExpiresInSec)
+}
+
+func (suite *serviceUnit) TestTokenExtractClaims() {
+	testCases := []struct {
+		description string
+		tokenFn     func() string
+		expectedErr error
+	}{
+		{
+			description: "ShouldBeSuccess",
+			tokenFn: func() string {
+				claims := &jwt.StandardClaims{
+					ExpiresAt: time.Now().Add(300 * time.Second).Unix(),
+					IssuedAt:  time.Now().Unix(),
+					Subject:   strconv.FormatInt(1, 10),
+				}
+
+				token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+				tokenString, _ := token.SignedString(
+					[]byte(suite.configuration.Jwt.SecretKey),
+				)
+
+				return tokenString
+			},
+			expectedErr: nil,
+		},
+		{
+			description: "ShouldReturnInvalidErr",
+			tokenFn:     func() string { return "invalid_token" },
+			expectedErr: ErrInvalidRefreshToken,
+		},
+	}
+
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			_, actualErr := suite.authService.ExtractTokenClaims(tc.tokenFn())
+
+			suite.Equal(tc.expectedErr, actualErr)
+		})
+	}
 }
 
 func ActualExpiresInSec(t *testing.T, claims jwt.MapClaims) int64 {

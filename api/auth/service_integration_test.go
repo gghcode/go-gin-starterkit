@@ -70,7 +70,8 @@ func (suite *serviceIntegration) TestIssueRefreshToken() {
 			refreshToken, _ := suite.authService.IssueRefreshToken(tc.argsUserID)
 
 			actual := suite.authService.VerifyRefreshToken(
-				tc.argsUserID, refreshToken,
+				tc.argsUserID,
+				refreshToken,
 			)
 
 			suite.Equal(tc.expected, actual)
@@ -108,7 +109,10 @@ func (suite *serviceIntegration) TestVerifyRefreshToken() {
 
 	for _, tc := range testCases {
 		suite.Run(tc.description, func() {
-			actual := suite.authService.VerifyRefreshToken(tc.argsUserID, tc.argsRefreshToken)
+			actual := suite.authService.VerifyRefreshToken(
+				tc.argsUserID,
+				tc.argsRefreshToken,
+			)
 
 			suite.Equal(tc.expected, actual)
 		})
