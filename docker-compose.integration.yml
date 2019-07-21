@@ -1,5 +1,9 @@
 version: "3.7"
 services:
+  redis:
+    image: redis:5.0.5-alpine
+    ports:
+      - 6378:6379
   postgres:
     image: postgres:11.3-alpine
     environment:
