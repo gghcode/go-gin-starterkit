@@ -48,7 +48,12 @@ func (suite *controllerIntegration) SetupSuite() {
 	userRepo := user.NewRepository(dbConn)
 	passport := service.NewPassport()
 
-	authController := auth.NewController(conf, userRepo, passport)
+	authController := auth.NewController(
+		conf,
+		userRepo,
+		passport,
+		db.NewRedisConn(conf),
+	)
 	authController.RegisterRoutes(suite.ginEngine)
 
 	testUser := user.User{

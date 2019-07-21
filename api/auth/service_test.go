@@ -1,14 +1,14 @@
-package auth_test
+package auth
 
 import (
 	"strconv"
 	"testing"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/gghcode/go-gin-starterkit/api/auth"
 	"github.com/gghcode/go-gin-starterkit/api/common"
 	"github.com/gghcode/go-gin-starterkit/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
+	"github.com/go-redis/redis"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 )
@@ -56,11 +56,18 @@ func (p *fakePassport) IsValidPassword(password string, hash []byte) bool {
 	return args.Bool(0)
 }
 
+type fakeRedisConn struct {
+}
+
+func (r *fakeRedisConn) Client() *redis.Client {
+	return nil
+}
+
 type serviceUnit struct {
 	suite.Suite
 
 	configuration config.Configuration
-	authService   auth.Service
+	authService   Service
 	userRepo      fakeUserRepo
 	passport      fakePassport
 }
@@ -76,10 +83,11 @@ func (suite *serviceUnit) SetupTest() {
 
 	suite.userRepo = fakeUserRepo{}
 	suite.passport = fakePassport{}
-	suite.authService = auth.NewService(
+	suite.authService = NewService(
 		suite.configuration,
 		&suite.userRepo,
 		&suite.passport,
+		&fakeRedisConn{},
 	)
 }
 
@@ -125,7 +133,7 @@ func (suite *serviceUnit) TestVerifyAuthentication() {
 			stubErr:           nil,
 			stubPasswordValid: false,
 			expectedUser:      user.EmptyUser,
-			expectedErr:       auth.ErrInvalidPassword,
+			expectedErr:       ErrInvalidPassword,
 		},
 	}
 
@@ -174,32 +182,6 @@ func (suite *serviceUnit) TestGenerateAccessToken() {
 	suite.Equal(strconv.FormatInt(userID, 10), claims["sub"])
 
 	expectedExpiresInSec := suite.configuration.Jwt.AccessExpiresInSec
-	actualExpiresInSec := ActualExpiresInSec(suite.T(), claims)
-
-	suite.Equal(expectedExpiresInSec, actualExpiresInSec)
-}
-
-func (suite *serviceUnit) TestIssueRefreshToken() {
-	userID := int64(1)
-
-	refreshToken, err := suite.authService.IssueRefreshToken(userID)
-	suite.NoError(err)
-	suite.NotNil(refreshToken)
-	suite.NotEqual(refreshToken, "")
-
-	token, err := jwt.Parse(refreshToken, func(token *jwt.Token) (interface{}, error) {
-		return []byte(suite.configuration.Jwt.SecretKey), nil
-	})
-
-	suite.NoError(err)
-	suite.True(token.Valid)
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-
-	suite.True(ok)
-	suite.Equal(strconv.FormatInt(userID, 10), claims["sub"])
-
-	expectedExpiresInSec := suite.configuration.Jwt.RefreshExpiresInSec
 	actualExpiresInSec := ActualExpiresInSec(suite.T(), claims)
 
 	suite.Equal(expectedExpiresInSec, actualExpiresInSec)

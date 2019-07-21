@@ -1,27 +1,33 @@
 package auth
 
 import (
+	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gghcode/go-gin-starterkit/api/user"
 	"github.com/gghcode/go-gin-starterkit/config"
+	"github.com/gghcode/go-gin-starterkit/db"
 	"github.com/gghcode/go-gin-starterkit/service"
 )
+
+const prefixRefreshToken = "refresh_token"
 
 // Service is auth authService.
 type Service interface {
 	VerifyAuthentication(username, password string) (user.User, error)
 	GenerateAccessToken(userID int64) (string, error)
 	IssueRefreshToken(userID int64) (string, error)
+	VerifyRefreshToken(userID int64, refreshToken string) bool
 }
 
 // NewService return new auth authService instance.
 func NewService(
 	conf config.Configuration,
 	userRepo user.Repository,
-	passport service.Passport) Service {
+	passport service.Passport,
+	redisConn db.RedisConn) Service {
 
 	return &authService{
 		secretKeyBytes:      []byte(conf.Jwt.SecretKey),
@@ -29,6 +35,7 @@ func NewService(
 		refreshExpiresInSec: time.Duration(conf.Jwt.RefreshExpiresInSec),
 		userRepo:            userRepo,
 		passport:            passport,
+		redis:               redisConn,
 	}
 }
 
@@ -39,6 +46,7 @@ type authService struct {
 
 	userRepo user.Repository
 	passport service.Passport
+	redis    db.RedisConn
 }
 
 func (authService *authService) VerifyAuthentication(username, password string) (user.User, error) {
@@ -83,5 +91,29 @@ func (authService *authService) IssueRefreshToken(userID int64) (string, error) 
 		return "", err
 	}
 
+	if err := authService.redis.Client().Set(
+		RefreshTokenRedisStorageKey(userID),
+		tokenString,
+		authService.refreshExpiresInSec*time.Second,
+	).Err(); err != nil {
+		return "", err
+	}
+
 	return tokenString, nil
+}
+
+func (authService *authService) VerifyRefreshToken(userID int64, refreshToken string) bool {
+	storageKey := RefreshTokenRedisStorageKey(userID)
+
+	token, err := authService.redis.Client().Get(storageKey).Result()
+	if err != nil {
+		return false
+	}
+
+	return token == refreshToken
+}
+
+// RefreshTokenRedisStorageKey return key that stored on redis
+func RefreshTokenRedisStorageKey(userID int64) string {
+	return fmt.Sprintf("%s_%d", prefixRefreshToken, userID)
 }
