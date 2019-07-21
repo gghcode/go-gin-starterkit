@@ -42,6 +42,7 @@ func main() {
 			Build),
 
 		inject.Provide(db.NewConn),
+		inject.Provide(db.NewRedisConn),
 		inject.Provide(service.NewPassport),
 
 		inject.Provide(common.NewController, inject.As(api.IController)),

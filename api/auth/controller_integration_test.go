@@ -1,6 +1,7 @@
 package auth_test
 
 import (
+	"io"
 	"net/http"
 	"testing"
 
@@ -20,6 +21,7 @@ type controllerIntegration struct {
 
 	ginEngine *gin.Engine
 	dbConn    *db.Conn
+	service   auth.Service
 
 	testUser user.User
 }
@@ -47,12 +49,11 @@ func (suite *controllerIntegration) SetupSuite() {
 
 	userRepo := user.NewRepository(dbConn)
 	passport := service.NewPassport()
+	suite.service = auth.NewService(conf, userRepo, passport, db.NewRedisConn(conf))
 
 	authController := auth.NewController(
 		conf,
-		userRepo,
-		passport,
-		db.NewRedisConn(conf),
+		suite.service,
 	)
 	authController.RegisterRoutes(suite.ginEngine)
 
@@ -112,6 +113,52 @@ func (suite *controllerIntegration) TestGetToken() {
 				"POST",
 				auth.APIPath+"token",
 				reqBody,
+			)
+
+			suite.Equal(tc.expectedStatus, actualRes.StatusCode)
+		})
+	}
+}
+
+func (suite *controllerIntegration) TestGetTokenByRefreshToken() {
+	testCases := []struct {
+		description    string
+		reqBodyFn      func() io.Reader
+		expectedStatus int
+		expectedJSON   string
+	}{
+		{
+			description: "ShouldGenerateToken",
+			reqBodyFn: func() io.Reader {
+				refreshToken, err := suite.service.IssueRefreshToken(10)
+				suite.NoError(err)
+
+				return testutil.ReqBodyFromInterface(suite.T(), auth.AccessTokenByRefreshRequest{
+					Token: refreshToken,
+				})
+			},
+			expectedStatus: http.StatusOK,
+			expectedJSON:   testutil.JSONStringFromInterface(suite.T(), auth.TokenResponse{}),
+		},
+		{
+			description: "ShouldReturnUnauthorizedErr_WhenInvalidToken",
+			reqBodyFn: func() io.Reader {
+				return testutil.ReqBodyFromInterface(suite.T(), auth.AccessTokenByRefreshRequest{
+					Token: "invalidToken",
+				})
+			},
+			expectedStatus: http.StatusUnauthorized,
+		},
+	}
+
+	for _, tc := range testCases {
+		suite.Run(tc.description, func() {
+			actualRes := testutil.ActualResponse(
+				suite.T(),
+				suite.ginEngine,
+				"POST",
+				auth.APIPath+"refresh",
+				tc.reqBodyFn(),
 			)
 
 			suite.Equal(tc.expectedStatus, actualRes.StatusCode)

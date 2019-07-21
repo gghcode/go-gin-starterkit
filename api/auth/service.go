@@ -20,6 +20,7 @@ type Service interface {
 	GenerateAccessToken(userID int64) (string, error)
 	IssueRefreshToken(userID int64) (string, error)
 	VerifyRefreshToken(userID int64, refreshToken string) bool
+	ExtractTokenClaims(token string) (jwt.MapClaims, error)
 }
 
 // NewService return new auth authService instance.
@@ -111,6 +112,29 @@ func (authService *authService) VerifyRefreshToken(userID int64, refreshToken st
 	}
 
 	return token == refreshToken
+}
+
+func (authService *authService) ExtractTokenClaims(token string) (jwt.MapClaims, error) {
+	claims := jwt.MapClaims{}
+
+	_, err := jwt.ParseWithClaims(
+		token,
+		&claims,
+		func(token *jwt.Token) (interface{}, error) {
+			return authService.secretKeyBytes, nil
+		},
+	)
+
+	if err != nil {
+		validationErr, ok := err.(*jwt.ValidationError)
+		if ok && validationErr.Errors == jwt.ValidationErrorExpired {
+			return nil, ErrInvalidRefreshToken
+		}
+
+		return nil, ErrInvalidRefreshToken
+	}
+
+	return claims, nil
 }
 
 // RefreshTokenRedisStorageKey return key that stored on redis

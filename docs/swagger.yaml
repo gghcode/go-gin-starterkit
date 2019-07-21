@@ -1,16 +1,24 @@
 basePath: /api
 definitions:
+  auth.AccessTokenByRefreshRequest:
+    properties:
+      token:
+        example: <refresh token>
+        type: string
+    required:
+    - token
+    type: object
   auth.CreateAccessTokenRequest:
     properties:
       password:
         example: <password>
         type: string
-      user_name:
-        example: <user name>
+      username:
+        example: <username>
         type: string
     required:
     - password
-    - user_name
+    - username
     type: object
   auth.TokenResponse:
     properties:
@@ -98,6 +106,39 @@ info:
   title: Go Gin Starter API
   version: "1.0"
 paths:
+  /auth/refresh:
+    post:
+      consumes:
+      - application/json
+      description: Get new access token by refreshtoken
+      parameters:
+      - description: payload
+        in: body
+        name: payload
+        required: true
+        schema:
+          $ref: '#/definitions/auth.AccessTokenByRefreshRequest'
+          type: object
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: ok
+          schema:
+            $ref: '#/definitions/auth.TokenResponse'
+            type: object
+        "400":
+          description: Invalid payload
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+        "401":
+          description: Invalid credential
+          schema:
+            $ref: '#/definitions/common.ErrorResponse'
+            type: object
+      tags:
+      - Auth API
   /auth/token:
     post:
       consumes:

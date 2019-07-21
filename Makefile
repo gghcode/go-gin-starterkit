@@ -39,5 +39,8 @@ docker_down:
 	@docker-compose -p integration -f docker-compose.integration.yml down -v
 
 
-up-db:
+postgres:
 	@docker run --name test-db -d -p 5432:5432 postgres:11.3-alpine
+
+redis:
+	@docker run --name test-redis -d -p 6379:6379 redis:5.0.5-alpine

@@ -17,6 +17,55 @@
     "host": "{{.Host}}",
     "basePath": "/api",
     "paths": {
+        "/auth/refresh": {
+            "post": {
+                "description": "Get new access token by refreshtoken",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth API"
+                ],
+                "parameters": [
+                    {
+                        "description": "payload",
+                        "name": "payload",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/auth.AccessTokenByRefreshRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "ok",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/auth.TokenResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/common.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Invalid credential",
+                        "schema": {
+                            "type": "object",
+                            "$ref": "#/definitions/common.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/token": {
             "post": {
                 "description": "Get new access token",
@@ -463,20 +512,32 @@
         }
     },
     "definitions": {
+        "auth.AccessTokenByRefreshRequest": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "example": "\u003crefresh token\u003e"
+                }
+            }
+        },
         "auth.CreateAccessTokenRequest": {
             "type": "object",
             "required": [
                 "password",
-                "user_name"
+                "username"
             ],
             "properties": {
                 "password": {
                     "type": "string",
                     "example": "\u003cpassword\u003e"
                 },
-                "user_name": {
+                "username": {
                     "type": "string",
-                    "example": "\u003cuser name\u003e"
+                    "example": "\u003cusername\u003e"
                 }
             }
         },
