@@ -4,7 +4,7 @@ import "time"
 
 // CreateUserRequest is dto that contains info that require to create user.
 type CreateUserRequest struct {
-	UserName string `json:"user_name" example:"<new user name>" binding:"required,min=4,max=100"`
+	UserName string `json:"username" example:"<new username>" binding:"required,min=4,max=100"`
 	Password string `json:"password" example:"<new password>" binding:"required,min=8,max=50"`
 }
 

@@ -71,12 +71,12 @@ definitions:
       password:
         example: <new password>
         type: string
-      user_name:
-        example: <new user name>
+      username:
+        example: <new username>
         type: string
     required:
     - password
-    - user_name
+    - username
     type: object
   user.UpdateUserRequest:
     properties:
