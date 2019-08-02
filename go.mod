@@ -29,5 +29,4 @@ require (
 	golang.org/x/sys v0.0.0-20190626221950-04f50cda93cb // indirect
 	golang.org/x/tools v0.0.0-20190628222527-fb37f6ba8261 // indirect
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
-	gotest.tools v2.2.0+incompatible
 )
