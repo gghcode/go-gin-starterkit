@@ -62,8 +62,17 @@ func (controller *Controller) issueToken(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, _ := controller.service.GenerateAccessToken(loginUser.ID)
-	refreshToken, _ := controller.service.IssueRefreshToken(loginUser.ID)
+	accessToken, err := controller.service.GenerateAccessToken(loginUser.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, common.NewErrResp(err))
+		return
+	}
+
+	refreshToken, err := controller.service.IssueRefreshToken(loginUser.ID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, common.NewErrResp(err))
+		return
+	}
 
 	res := TokenResponse{
 		Type:         "Bearer",
@@ -107,7 +116,11 @@ func (controller *Controller) refreshToken(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, _ := controller.service.GenerateAccessToken(userID)
+	accessToken, err := controller.service.GenerateAccessToken(userID)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, common.NewErrResp(err))
+		return
+	}
 
 	res := TokenResponse{
 		Type:        "Bearer",

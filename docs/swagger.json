@@ -615,16 +615,16 @@
             "type": "object",
             "required": [
                 "password",
-                "user_name"
+                "username"
             ],
             "properties": {
                 "password": {
                     "type": "string",
                     "example": "\u003cnew password\u003e"
                 },
-                "user_name": {
+                "username": {
                     "type": "string",
-                    "example": "\u003cnew user name\u003e"
+                    "example": "\u003cnew username\u003e"
                 }
             }
         },
